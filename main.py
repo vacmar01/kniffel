@@ -39,7 +39,6 @@ fixed_score_categories = {
 upper_section = ["Einser", "Zweier", "Dreier", "Vierer", "Fünfer", "Sechser"]
 
 def calculate_upper_total(user_scores):
-    upper_section = ["Einser", "Zweier", "Dreier", "Vierer", "Fünfer", "Sechser"]
     return sum(user_scores.get(category, 0) or 0 for category in upper_section)
 
 def calculate_bonus(upper_total):
@@ -51,82 +50,6 @@ def calculate_total(user_scores):
     lower_total = sum(user_scores.get(category, 0) or 0 for category in categories if category not in upper_section)
     return upper_total + bonus + lower_total
 
-@rt("/")
-def get(session):
-    return Div(
-        Div(
-            Div(
-                Span("🎲", cls="text-6xl mb-2"),
-                H1("Kniffel Online", cls="text-4xl font-bold text-blue-600 mb-2"),
-                cls="flex flex-col items-center"
-            ),
-            P("Würfelspaß für die ganze Familie", cls="text-xl text-gray-600 mb-6"),
-            cls="bg-gradient-to-r from-blue-100 to-blue-200 p-10 rounded-lg shadow-lg text-center mb-8"
-        ),
-        Div(
-            H2("Spieler hinzufügen", cls="text-xl font-semibold mb-4"),
-            Form(
-                Div(
-                    Input(type="text", name="username", placeholder="Spielername", cls="w-full border border-gray-300 rounded-l p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"),
-                    Button("Hinzufügen", type="submit", cls="bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-r transition duration-300 ease-in-out"),
-                    cls="flex shadow-sm"
-                ),
-                hx_post="/add-user",
-                hx_target="#score-table",
-                hx_swap="outerHTML",
-                **{'hx-on::after-request': "this.reset()"},
-                cls="max-w-md mx-auto"
-            ),
-            cls="bg-white p-6 rounded-lg shadow-md mb-8"
-        ),
-        Div(
-            Div(id="score-table", cls="mt-4", hx_get="/score-table", hx_trigger="load"),
-            Button(
-                "Punktestand zurücksetzen",
-                hx_post="/reset-scores",
-                hx_target="#score-table",
-                hx_swap="outerHTML",
-                hx_confirm="Sind Sie sicher, dass Sie alle Punkte zurücksetzen möchten?",
-                cls="mt-4 bg-red-500 hover:bg-red-600 text-white p-2 rounded transition duration-300 ease-in-out"
-            ),
-            cls="bg-white rounded-lg shadow-md p-6"
-        ),
-        Footer(
-            P(
-                "Created by ",
-                A("@rasmus1610", href="https://twitter.com/rasmus1610", target="_blank", cls="text-blue-500 hover:text-blue-700"),
-                cls="text-center text-gray-600"
-            ),
-            cls="mt-8 pb-4"
-        ),
-        cls="container mx-auto p-4"
-    )
-
-@rt("/add-user")
-def post(session, username: str):
-    users = session.get("users", [])
-    if username and username not in users:
-        users.append(username)
-        session["users"] = users
-    return get_score_table(session)
-
-@rt("/delete-user/{username}")
-def post(session, username: str):
-    users = session.get("users", [])
-    if username in users:
-        users.remove(username)
-        session["users"] = users
-        # Remove the user's scores
-        scores = session.get("scores", {})
-        if username in scores:
-            del scores[username]
-            session["scores"] = scores
-    return get_score_table(session)
-
-@rt("/score-table")
-def get(session):
-    return get_score_table(session)
-
 def get_score_input(user, category, value):
     if category in fixed_score_categories:
         return Select(
@@ -135,7 +58,7 @@ def get_score_input(user, category, value):
             Option("Gestrichen", value="0", selected=value == 0),
             name="value",
             hx_post=f"/update-score/{user}/{category}",
-            hx_target="#score-table",
+            hx_target="#score-table-container",
             hx_swap="outerHTML",
             hx_trigger="change",
             cls="w-full p-1 border rounded bg-white"
@@ -146,25 +69,11 @@ def get_score_input(user, category, value):
             value=value if value is not None else "",
             name="value",
             hx_post=f"/update-score/{user}/{category}",
-            hx_target="#score-table",
+            hx_target="#score-table-container",
             hx_swap="outerHTML",
             hx_trigger="blur",
             cls="w-full p-1 border rounded"
         )
-
-# Define calculation functions globally
-def calculate_upper_total(user_scores):
-    upper_section = ["Einser", "Zweier", "Dreier", "Vierer", "Fünfer", "Sechser"]
-    return sum(user_scores.get(category, 0) or 0 for category in upper_section)
-
-def calculate_bonus(upper_total):
-    return 35 if upper_total >= 63 else 0
-
-def calculate_total(user_scores):
-    upper_total = calculate_upper_total(user_scores)
-    bonus = calculate_bonus(upper_total)
-    lower_total = sum(user_scores.get(category, 0) or 0 for category in categories if category not in upper_section)
-    return upper_total + bonus + lower_total
 
 def get_score_table(session):
     users = session.get("users", [])
@@ -183,7 +92,7 @@ def get_score_table(session):
                         Button(
                             "×",
                             hx_post=f"/delete-user/{user}",
-                            hx_target="#score-table",
+                            hx_target="#score-table-container",
                             hx_swap="outerHTML",
                             hx_confirm=f"Bist du sicher, dass du {user} entfernen möchtest?",
                             cls="ml-2 text-red-500 font-bold"
@@ -236,6 +145,92 @@ def get_score_table(session):
         id="score-table"
     )
 
+def get_score_table_container(session):
+    users = session.get("users", [])
+    has_players = len(users) > 0
+    return Div(
+        get_score_table(session),
+        Button(
+            "Punktestand zurücksetzen",
+            hx_post="/reset-scores",
+            hx_target="#score-table-container",
+            hx_swap="outerHTML",
+            hx_confirm="Sind Sie sicher, dass Sie alle Punkte zurücksetzen möchten?",
+            cls="mt-4 bg-red-500 hover:bg-red-600 text-white p-2 rounded transition duration-300 ease-in-out"
+        ) if has_players else None,
+        cls="bg-white rounded-lg shadow-md p-6",
+        id="score-table-container"
+    )
+
+@rt("/")
+def get(session):
+    return Div(
+        Div(
+            Div(
+                Span("🎲", cls="text-6xl mb-2"),
+                H1("Kniffel Online", cls="text-4xl font-bold text-blue-600 mb-2"),
+                cls="flex flex-col items-center"
+            ),
+            P("Würfelspaß für die ganze Familie", cls="text-xl text-gray-600 mb-6"),
+            cls="bg-gradient-to-r from-blue-100 to-blue-200 p-10 rounded-lg shadow-lg text-center mb-8"
+        ),
+        Div(
+            H2("Spieler hinzufügen", cls="text-xl font-semibold mb-4"),
+            Form(
+                Div(
+                    Input(type="text", name="username", placeholder="Spielername", cls="w-full border border-gray-300 rounded-l p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"),
+                    Button("Hinzufügen", type="submit", cls="bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-r transition duration-300 ease-in-out"),
+                    cls="flex shadow-sm"
+                ),
+                hx_post="/add-user",
+                hx_target="#score-table-container",
+                hx_swap="outerHTML",
+                **{'hx-on::after-request': "this.reset()"},
+                cls="max-w-md mx-auto"
+            ),
+            cls="bg-white p-6 rounded-lg shadow-md mb-8"
+        ),
+        Div(
+            Div(id="score-table", cls="mt-4", hx_get="/score-table", hx_trigger="load"),
+            cls="bg-white rounded-lg shadow-md p-6",
+            id="score-table-container"
+        ),
+        Footer(
+            P(
+                "Created by ",
+                A("@rasmus1610", href="https://twitter.com/rasmus1610", target="_blank", cls="text-blue-500 hover:text-blue-700"),
+                cls="text-center text-gray-600"
+            ),
+            cls="mt-8 pb-4"
+        ),
+        cls="container mx-auto p-4"
+    )
+
+@rt("/add-user")
+def post(session, username: str):
+    users = session.get("users", [])
+    if username and username not in users:
+        users.append(username)
+        session["users"] = users
+    return get_score_table_container(session)
+
+@rt("/delete-user/{username}")
+def post(session, username: str):
+    users = session.get("users", [])
+    if username in users:
+        users.remove(username)
+        session["users"] = users
+        # Remove the user's scores
+        scores = session.get("scores", {})
+        if username in scores:
+            del scores[username]
+            session["scores"] = scores
+    return get_score_table_container(session)
+
+@rt("/score-table")
+def get(session):
+    return get_score_table_container(session)
+
 @rt("/update-score/{user}/{category}")
 def post(session, user: str, category: str, value: str):
     scores = session.get("scores", {})
@@ -253,12 +248,12 @@ def post(session, user: str, category: str, value: str):
         scores[user][category] = int(value) if value else None
     
     session["scores"] = scores
-    return get_score_table(session)
+    return get_score_table_container(session)
 
 @rt("/reset-scores")
 def post(session):
     users = session.get("users", [])
     session["scores"] = {user: {} for user in users}  # Reset scores for existing users
-    return get_score_table(session)
+    return get_score_table_container(session)
 
 serve()
