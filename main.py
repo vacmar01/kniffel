@@ -13,19 +13,25 @@ app, rt = fast_app(
 categories = {
     "Einser": "Zähle nur die Einser", "Zweier": "Zähle nur die Zweier", "Dreier": "Zähle nur die Dreier",
     "Vierer": "Zähle nur die Vierer", "Fünfer": "Zähle nur die Fünfer", "Sechser": "Zähle nur die Sechser",
-    "Dreierpasch": "Summe aller Augen", "Viererpasch": "Summe aller Augen", "Full House": "25 Punkte",
-    "Kleine Straße": "30 Punkte", "Große Straße": "40 Punkte", "Kniffel": "50 Punkte", "Chance": "Summe aller Augen"
+    "Dreierpasch": "Drei gleiche Augen, Summe aller Augen zählen", "Viererpasch": "Vier gleiche Augen, Summe aller Augen zählen", "Full House": "3 gleiche Augen und 2 gleiche Augen, 25 Punkte",
+    "Kleine Straße": "4 aufeinanderfolgende Augen, 30 Punkte", "Große Straße": "5 aufeinanderfolgende Augen, 40 Punkte", "Kniffel": "5 gleiche Augen, 50 Punkte", "Chance": "Summe aller Augen"
 }
 fixed_scores = {"Full House": 25, "Kleine Straße": 30, "Große Straße": 40, "Kniffel": 50}
 upper_section = ["Einser", "Zweier", "Dreier", "Vierer", "Fünfer", "Sechser"]
 
 def calculate_scores(user_scores):
+    """
+    Calculate the scores for the game and return the upper total, bonus, and total as a tuple.
+    """
     upper_total = sum(user_scores.get(cat, 0) or 0 for cat in upper_section)
     bonus = 35 if upper_total >= 63 else 0
     total = upper_total + bonus + sum(user_scores.get(cat, 0) or 0 for cat in categories if cat not in upper_section)
     return upper_total, bonus, total
 
 def get_score_input(user, category, value):
+    """
+    Get the score HTML input element for each category.
+    """
     common_attrs = {
         "name": "value",
         "hx_post": f"/update-score/{user}/{category}",
@@ -44,11 +50,17 @@ def get_score_input(user, category, value):
     return Input(type="number", value=value if value is not None else "", hx_trigger="blur", **common_attrs)
 
 def get_score_table(session):
+    """
+    Get the score table HTML element for the game.
+    """
     users, scores = session.get("users", []), session.get("scores", {})
     if not users:
-        return Div("Fügen Sie Spieler hinzu, um das Spiel zu beginnen.", cls="italic text-gray-500", id="score-table")
+        return Div("Füge Spieler hinzu, um das Spiel zu beginnen.", cls="italic text-gray-500", id="score-table")
     
     def get_missing_categories(user_scores):
+        """
+        Get the missing categories for a user to display in the score table.
+        """
         return [cat for cat in categories if user_scores.get(cat) is None]
     
     return Table(
@@ -85,6 +97,10 @@ def get_score_table(session):
     )
 
 def get_score_table_container(session):
+    """
+    Get the score table container HTML element for the game. 
+    It contains the score table, a reset button, and a container for the score table.
+    """
     has_players = bool(session.get("users"))
     return Div(
         get_score_table(session),
@@ -96,6 +112,10 @@ def get_score_table_container(session):
 
 @rt("/")
 def get(session):
+    """
+    Get the main page HTML element for the game.
+    It contains the title, description, and a form to add players.
+    """
     return Div(
         Div(Div(Span("🎲", cls="text-6xl mb-2"), H1("Kniffel Online", cls="text-4xl font-bold text-blue-600 mb-2"), cls="flex flex-col items-center"),
             P("Würfelspaß für die ganze Familie", cls="text-xl text-gray-600 mb-6"),
@@ -116,6 +136,9 @@ def get(session):
 
 @rt("/add-user")
 def post(session, username: str):
+    """
+    Add a user to the game.
+    """
     users = session.get("users", [])
     if username and username not in users:
         users.append(username)
@@ -124,6 +147,9 @@ def post(session, username: str):
 
 @rt("/delete-user/{username}")
 def post(session, username: str):
+    """
+    Delete a user from the game.
+    """
     users = session.get("users", [])
     if username in users:
         users.remove(username)
@@ -136,10 +162,16 @@ def post(session, username: str):
 
 @rt("/score-table")
 def get(session):
+    """
+    Get the score table container HTML element for the game.
+    """
     return get_score_table_container(session)
 
 @rt("/update-score/{user}/{category}")
 def post(session, user: str, category: str, value: str):
+    """
+    Update the score for a user and category.
+    """
     scores = session.get("scores", {})
     scores.setdefault(user, {})[category] = fixed_scores.get(category, int(value) if value else None) if value != "" else None
     session["scores"] = scores
@@ -147,6 +179,9 @@ def post(session, user: str, category: str, value: str):
 
 @rt("/reset-scores")
 def post(session):
+    """
+    Reset the scores for all users.
+    """
     session["scores"] = {user: {} for user in session.get("users", [])}
     return get_score_table_container(session)
 
