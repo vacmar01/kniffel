@@ -48,6 +48,9 @@ def get_score_table(session):
     if not users:
         return Div("Fügen Sie Spieler hinzu, um das Spiel zu beginnen.", cls="italic text-gray-500", id="score-table")
     
+    def get_missing_categories(user_scores):
+        return [cat for cat in categories if user_scores.get(cat) is None]
+    
     return Table(
         Thead(Tr(Th("Kategorie", cls="border p-2"), *[Th(
             Div(user, Button("×", hx_post=f"/delete-user/{user}", hx_target="#score-table-container", hx_swap="outerHTML",
@@ -56,6 +59,18 @@ def get_score_table(session):
             cls="border p-2"
         ) for user in users])),
         Tbody(
+            Tr(
+                Td("Fehlende Kategorien", cls="border p-2 text-gray-500 text-sm"),
+                *[Td(
+                    Div(
+                        *[Div(cat, cls="bg-gray-100 text-gray-600 text-xs font-normal mr-1 px-2 py-0.5 rounded") 
+                          for cat in get_missing_categories(scores.get(user, {}))],
+                        cls="flex flex-wrap gap-1"
+                    ),
+                    cls="border p-2"
+                ) for user in users],
+                cls="border-t border-b border-gray-200"
+            ),
             *[Tr(
                 Td(Div(Span(category, cls="mr-2"), Span("ⓘ", cls="cursor-pointer", **{"@mouseenter": "tooltip = true", "@mouseleave": "tooltip = false"}),
                         Div(description, cls="absolute bg-gray-800 text-white p-2 rounded shadow-lg z-10 mt-1", x_show="tooltip"),
@@ -64,7 +79,7 @@ def get_score_table(session):
             ) for category, description in categories.items()],
             *[Tr(Td(label, cls="border p-2 font-bold"),
                  *[Td(str(value), cls="border p-2 font-bold") for value in [calculate_scores(scores.get(user, {}))[i] for user in users]])
-              for i, label in enumerate(["Oberer Teil Summe", "Bonus (bei 63 oder mehr)", "Gesamtsumme"])]
+              for i, label in enumerate(["Oberer Teil Summe", "Bonus (bei 63 oder mehr)", "Gesamtsumme"])],
         ),
         cls="w-full border-collapse", id="score-table"
     )
