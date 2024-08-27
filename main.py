@@ -76,7 +76,7 @@ def get_score_table_container(session):
         Button("Punktestand zurücksetzen", hx_post="/reset-scores", hx_target="#score-table-container", hx_swap="outerHTML",
                hx_confirm="Sind Sie sicher, dass Sie alle Punkte zurücksetzen möchten?",
                cls="mt-4 bg-red-500 hover:bg-red-600 text-white p-2 rounded transition duration-300 ease-in-out") if has_players else None,
-        cls="bg-white rounded-lg", id="score-table-container"
+        cls="bg-white rounded-lg shadow-md p-6", id="score-table-container"
     )
 
 @rt("/")
@@ -93,7 +93,7 @@ def get(session):
                  cls="max-w-md mx-auto"),
             cls="bg-white p-6 rounded-lg shadow-md mb-8"),
         Div(Div(id="score-table", cls="mt-4", hx_get="/score-table", hx_trigger="load"),
-            cls="bg-white rounded-lg shadow-md p-6", id="score-table-container"),
+            id="score-table-container"),
         Footer(P("Created by ", A("@rasmus1610", href="https://twitter.com/rasmus1610", target="_blank", cls="text-blue-500 hover:text-blue-700"),
                  cls="text-center text-gray-600"), cls="mt-8 pb-4"),
         cls="container mx-auto p-4"
