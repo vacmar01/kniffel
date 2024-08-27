@@ -130,6 +130,7 @@ def get(session):
         Div(Div(id="score-table", cls="mt-4", hx_get="/score-table", hx_trigger="load"),
             id="score-table-container"),
         Footer(P("Created by ", A("@rasmus1610", href="https://twitter.com/rasmus1610", target="_blank", cls="text-blue-500 hover:text-blue-700"),
+                 " | ", A("GitHub", href="https://github.com/vacmar01/kniffel", target="_blank", cls="text-blue-500 hover:text-blue-700"),
                  cls="text-center text-gray-600"), cls="mt-8 pb-4"),
         cls="container mx-auto p-4"
     )
