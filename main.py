@@ -31,7 +31,7 @@ def calculate_scores(user_scores):
     total = upper_total + bonus + sum(user_scores.get(cat, 0) or 0 for cat in categories if cat not in upper_section)
     return upper_total, bonus, total
 
-def get_score_input(user, category, value):
+def ScoreInput(user, category, value):
     """
     Get the score HTML input element for each category.
     """
@@ -52,7 +52,7 @@ def get_score_input(user, category, value):
         )
     return Input(type="number", value=value if value is not None else "", hx_trigger="blur", **common_attrs)
 
-def get_score_table(session):
+def ScoreTable(session):
     """
     Get the score table HTML element for the game.
     """
@@ -90,7 +90,7 @@ def get_score_table(session):
                 Td(Div(Span(category, cls="mr-2"), Span("ⓘ", cls="cursor-pointer", **{"@mouseenter": "tooltip = true", "@mouseleave": "tooltip = false"}),
                         Div(description, cls="absolute bg-gray-800 text-white p-2 rounded shadow-md z-10 mt-1", x_show="tooltip"),
                         cls="relative"), cls="border p-2", x_data="{ tooltip: false }"),
-                *[Td(get_score_input(user, category, scores.get(user, {}).get(category)), cls="border p-2") for user in users]
+                *[Td(ScoreInput(user, category, scores.get(user, {}).get(category)), cls="border p-2") for user in users]
             ) for category, description in categories.items()],
             *[Tr(Td(label, cls="border p-2 font-bold"),
                  *[Td(str(value), cls="border p-2 font-bold") for value in [calculate_scores(scores.get(user, {}))[i] for user in users]])
@@ -99,19 +99,73 @@ def get_score_table(session):
         cls="w-full border-collapse", id="score-table"
     )
 
-def get_score_table_container(session):
+def ScoreTableContainer(session):
     """
     Get the score table container HTML element for the game. 
     It contains the score table, a reset button, and a container for the score table.
     """
     has_players = bool(session.get("users"))
     return Div(
-        get_score_table(session),
+        ScoreTable(session),
         Button("Punktestand zurücksetzen", hx_post="/reset-scores", hx_target="#score-table-container", hx_swap="outerHTML",
                hx_confirm="Sind Sie sicher, dass Sie alle Punkte zurücksetzen möchten?",
                cls="mt-4 bg-red-500 hover:bg-red-600 text-white p-2 rounded transition duration-300 ease-in-out") if has_players else None,
         cls="bg-white rounded-lg p-6", id="score-table-container"
     )
+    
+def Navbar():
+    return Div(
+        Div(
+            Span("Sende Feedback", cls="mr-2 font-bold text-gray-100", x_transition=True, x_show="showFeedback"),
+            A("📧", href="mailto:mariusvach@gmail.com", cls="text-4xl relative", target="_blank", **{"@mouseenter": "showFeedback = true", "@mouseleave": "showFeedback = false"}),
+            cls="inline-flex items-center", x_data="{ showFeedback: false }"
+        ), 
+        cls="w-full bg-transparent py-4 flex justify-end"
+    )
+
+def Hero():
+    return Div(
+            Span("🎲", cls="text-6xl mb-2"), 
+            H1("Kniffel Online", cls="text-4xl font-bold text-gray-100 mb-2"), 
+            cls="flex flex-col items-center mt-10"
+        ), P("Spiele Kniffel online mit deinen Freunden", cls="text-xl text-gray-300 mb-6")
+
+    
+def Header():
+    style = """
+    background-color: #3b82f6;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Cg fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.14'%3E%3Cpath opacity='.5' d='M96 95h4v1h-4v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9zm-1 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-9-10h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm9-10v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-9-10h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm9-10v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-9-10h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm9-10v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-9-10h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9z'/%3E%3Cpath d='M6 5V0H5v5H0v1h5v94h1V6h94V5H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    """
+    
+    return Div(
+        Div(
+            Navbar(),
+            Hero(),
+            cls="container mx-auto"
+        ),
+        cls="pb-32 text-center mb-8 w-full",
+        style=style
+    )
+    
+def AddPlayerForm():
+    return Form(
+            Div(
+                Input(type="text", name="username", placeholder="Spielername", cls="w-full text-lg border border-gray-300 rounded-l p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"),
+                Button("Hinzufügen", type="submit", cls="bg-blue-500 hover:bg-blue-600 text-lg text-white p-2 rounded-r transition duration-300 ease-in-out disabled:bg-gray-400 disabled:cursor-not-allowed"),
+                cls="flex"
+            ),
+            hx_post="/add-user", hx_target="#score-table-container", hx_swap="outerHTML", **{'hx-on::after-request': "this.reset()"}, hx_disabled_elt="find button",
+        cls="max-w-md mx-auto mb-6"
+    )
+    
+def MyCard(*args, **kwargs):
+    existing_cls = "bg-white p-6 rounded-lg shadow-md"
+    if 'cls' in kwargs:
+        kwargs['cls'] = f"{existing_cls} {kwargs['cls']}"
+    else:
+        kwargs['cls'] = existing_cls
+    return Div(*args, **kwargs)
+
 
 @rt("/")
 def get(session):
@@ -119,56 +173,33 @@ def get(session):
     Get the main page HTML element for the game.
     It contains the title, description, and a form to add players.
     """
+    
+    #read in content.md with the content for the home page
     with open('content.md', 'r', encoding='utf-8') as file:
         md_content = file.read()
     
-    return Title('onlinekniffel.de - Kniffel online spielen'), Div(
+    return Title('onlinekniffel.de - Kniffel online spielen'), Header(), Div(
         Div(
-            Div(
-                Div(
-                    Span("Sende Feedback", cls="mr-2 font-bold text-blue-600", x_show="showFeedback"),
-                    A("📧", href="mailto:mariusvach@gmail.com", cls="text-4xl relative", target="_blank", **{"@mouseenter": "showFeedback = true", "@mouseleave": "showFeedback = false"}),
-                    cls="inline-flex items-center", x_data="{ showFeedback: false }"
-                ),
-                cls="w-full bg-transparent py-4 px-6 flex justify-end"
-            ),
-            Div(Span("🎲", cls="text-6xl mb-2"), H1("Kniffel Online", cls="text-4xl font-bold text-blue-600 mb-2"), cls="flex flex-col items-center mt-10"),
-            P("Spiele Kniffel online mit deinen Freunden", cls="text-xl text-gray-600 mb-6"),
-            cls="container mx-auto"
-        ),
-        cls="bg-gradient-to-r from-blue-100 to-blue-200 pb-20 text-center mb-8 w-full"
-    ), Div(
-        Div(
-            Div(
+            MyCard(
                 H2("Spieler hinzufügen", cls="text-xl font-semibold mb-4 text-center"),
-                Form(
-                    Div(
-                        Input(type="text", name="username", placeholder="Spielername", cls="w-full text-lg border border-gray-300 rounded-l p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"),
-                        Button("Hinzufügen", type="submit", cls="bg-blue-500 hover:bg-blue-600 text-lg text-white p-2 rounded-r transition duration-300 ease-in-out disabled:bg-gray-400 disabled:cursor-not-allowed"),
-                        cls="flex"
-                    ),
-                    hx_post="/add-user", hx_target="#score-table-container", hx_swap="outerHTML", **{'hx-on::after-request': "this.reset()"}, hx_disabled_elt="find button",
-                    cls="max-w-md mx-auto mb-6"
-                ),
+                AddPlayerForm(),
                 Div(
                     Div(id="score-table", cls="mt-4", hx_get="/score-table", hx_trigger="load"),
                     id="score-table-container"
                 ),
-                cls="bg-white p-6 rounded-lg mx-auto shadow-md"
             ),
-            Div(
+            MyCard(
                 Div(md_content, cls="marked prose prose-lg mx-auto"),
-                cls="bg-white p-6 rounded-lg shadow-md mt-8"
+                cls="mt-8"
             ),
             Footer(
                 P("Created by ", A("@rasmus1610", href="https://twitter.com/rasmus1610", target="_blank", cls="text-blue-500 hover:text-blue-700"),
                   " | ", A("GitHub", href="https://github.com/vacmar01/kniffel", target="_blank", cls="text-blue-500 hover:text-blue-700"),
                   cls="text-center text-gray-600"),
-                cls="mt-8 pb-4"
+                cls="py-12"
             ),
-            cls="container mx-auto -mt-16"
-        ),
-        cls="mx-auto w-full"
+            cls="container mx-auto -mt-32"
+        )
     )
 
 @rt("/add-user")
@@ -182,7 +213,7 @@ def post(session, username: str):
         session["users"] = users
     
     add_toast(session, f"{username} wurde hinzugefügt", "success")
-    return get_score_table_container(session)
+    return ScoreTableContainer(session)
 
 @rt("/delete-user/{username}")
 def post(session, username: str):
@@ -197,14 +228,14 @@ def post(session, username: str):
         if username in scores:
             del scores[username]
             session["scores"] = scores
-    return get_score_table_container(session)
+    return ScoreTableContainer(session)
 
 @rt("/score-table")
 def get(session):
     """
     Get the score table container HTML element for the game.
     """
-    return get_score_table_container(session)
+    return ScoreTableContainer(session)
 
 @rt("/update-score/{user}/{category}")
 def post(session, user: str, category: str, value: str):
@@ -225,7 +256,7 @@ def post(session, user: str, category: str, value: str):
         scores[user][category] = int(value) if value else None
     
     session["scores"] = scores
-    return get_score_table_container(session)
+    return ScoreTableContainer(session)
 
 @rt("/reset-scores")
 def post(session):
@@ -233,6 +264,6 @@ def post(session):
     Reset the scores for all users.
     """
     session["scores"] = {user: {} for user in session.get("users", [])}
-    return get_score_table_container(session)
+    return ScoreTableContainer(session)
 
 serve()
