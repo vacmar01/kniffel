@@ -120,7 +120,7 @@ def get(session):
     with open('content.md', 'r', encoding='utf-8') as file:
         md_content = file.read()
     
-    return Title('Kniffel Online'), Div(
+    return Title('onlinekniffel.de - Kniffel online spielen'), Div(
         Div(
             Div(Span("🎲", cls="text-6xl mb-2"), H1("Kniffel Online", cls="text-4xl font-bold text-blue-600 mb-2"), cls="flex flex-col items-center"),
             P("Spiele Kniffel online mit deinen Freunden", cls="text-xl text-gray-600 mb-6"),
