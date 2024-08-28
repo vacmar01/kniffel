@@ -3,9 +3,10 @@ from fasthtml.common import *
 app, rt = fast_app(
     pico=False,
     hdrs=(
-        Link(rel="stylesheet", href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css"),
+        Script(src="https://cdn.tailwindcss.com?plugins=typography"),
         Script(src="https://unpkg.com/htmx.org@1.9.10"),
         Script(src="https://unpkg.com/alpinejs@3.13.3/dist/cdn.min.js", defer=True),
+        MarkdownJS()
     ),
     bodykw={"class": "bg-gray-50 flex flex-col min-h-screen"}
 )
@@ -107,7 +108,7 @@ def get_score_table_container(session):
         Button("Punktestand zurücksetzen", hx_post="/reset-scores", hx_target="#score-table-container", hx_swap="outerHTML",
                hx_confirm="Sind Sie sicher, dass Sie alle Punkte zurücksetzen möchten?",
                cls="mt-4 bg-red-500 hover:bg-red-600 text-white p-2 rounded transition duration-300 ease-in-out") if has_players else None,
-        cls="bg-white rounded-lg shadow-md p-6", id="score-table-container"
+        cls="bg-white rounded-lg p-6", id="score-table-container"
     )
 
 @rt("/")
@@ -116,27 +117,48 @@ def get(session):
     Get the main page HTML element for the game.
     It contains the title, description, and a form to add players.
     """
+    with open('content.md', 'r', encoding='utf-8') as file:
+        md_content = file.read()
+    
     return Div(
-            Div(Div(Span("🎲", cls="text-6xl mb-2"), H1("Kniffel Online", cls="text-4xl font-bold text-blue-600 mb-2"), cls="flex flex-col items-center"),
-                P("Würfelspaß für die ganze Familie", cls="text-xl text-gray-600 mb-6"),
-                cls="container mx-auto"),
-            cls="bg-gradient-to-r from-blue-100 to-blue-200 p-10 text-center mb-8 w-full"), Div(
         Div(
-            Div(H2("Spieler hinzufügen", cls="text-xl font-semibold mb-4 text-center"),
-                Form(Div(Input(type="text", name="username", placeholder="Spielername", cls="w-full border border-gray-300 rounded-l p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"),
-                         Button("Hinzufügen", type="submit", cls="bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-r transition duration-300 ease-in-out"),
-                         cls="flex shadow-md"),
-                     hx_post="/add-user", hx_target="#score-table-container", hx_swap="outerHTML", **{'hx-on::after-request': "this.reset()"},
-                     cls="max-w-md mx-auto"),
-                cls="bg-white p-6 rounded-lg shadow-md -mt-16 mx-auto"),
-            Div(Div(id="score-table", cls="mt-4", hx_get="/score-table", hx_trigger="load"),
-                id="score-table-container"),
-            Footer(P("Created by ", A("@rasmus1610", href="https://twitter.com/rasmus1610", target="_blank", cls="text-blue-500 hover:text-blue-700"),
-                     " | ", A("GitHub", href="https://github.com/vacmar01/kniffel", target="_blank", cls="text-blue-500 hover:text-blue-700"),
-                     cls="text-center text-gray-600"), cls="mt-8 pb-4"),
+            Div(Span("🎲", cls="text-6xl mb-2"), H1("Kniffel Online", cls="text-4xl font-bold text-blue-600 mb-2"), cls="flex flex-col items-center"),
+            P("Spiele Kniffel mit deinen Freunden", cls="text-xl text-gray-600 mb-6"),
             cls="container mx-auto"
         ),
-        cls="mx-auto"
+        cls="bg-gradient-to-r from-blue-100 to-blue-200 p-10 text-center mb-8 w-full"
+    ), Div(
+        Div(
+            Div(
+                H2("Spieler hinzufügen", cls="text-xl font-semibold mb-4 text-center"),
+                Form(
+                    Div(
+                        Input(type="text", name="username", placeholder="Spielername", cls="w-full border border-gray-300 rounded-l p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"),
+                        Button("Hinzufügen", type="submit", cls="bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-r transition duration-300 ease-in-out"),
+                        cls="flex"
+                    ),
+                    hx_post="/add-user", hx_target="#score-table-container", hx_swap="outerHTML", **{'hx-on::after-request': "this.reset()"},
+                    cls="max-w-md mx-auto mb-6"
+                ),
+                Div(
+                    Div(id="score-table", cls="mt-4", hx_get="/score-table", hx_trigger="load"),
+                    id="score-table-container"
+                ),
+                cls="bg-white p-6 rounded-lg mx-auto shadow-md"
+            ),
+            # Div(
+            #     Div(md_content, cls="marked prose prose-lg mx-auto"),
+            #     cls="bg-white p-6 rounded-lg shadow-md mt-8"
+            # ),
+            Footer(
+                P("Created by ", A("@rasmus1610", href="https://twitter.com/rasmus1610", target="_blank", cls="text-blue-500 hover:text-blue-700"),
+                  " | ", A("GitHub", href="https://github.com/vacmar01/kniffel", target="_blank", cls="text-blue-500 hover:text-blue-700"),
+                  cls="text-center text-gray-600"),
+                cls="mt-8 pb-4"
+            ),
+            cls="container mx-auto -mt-16"
+        ),
+        cls="mx-auto w-full"
     )
 
 @rt("/add-user")
