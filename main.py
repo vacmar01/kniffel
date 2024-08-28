@@ -11,6 +11,8 @@ app, rt = fast_app(
     bodykw={"class": "bg-gray-50 flex flex-col min-h-screen"}
 )
 
+setup_toasts(app)
+
 categories = {
     "Einser": "Zähle nur die Einser", "Zweier": "Zähle nur die Zweier", "Dreier": "Zähle nur die Dreier",
     "Vierer": "Zähle nur die Vierer", "Fünfer": "Zähle nur die Fünfer", "Sechser": "Zähle nur die Sechser",
@@ -170,6 +172,8 @@ def post(session, username: str):
     if username and username not in users:
         users.append(username)
         session["users"] = users
+    
+    add_toast(session, f"{username} wurde hinzugefügt", "success")
     return get_score_table_container(session)
 
 @rt("/delete-user/{username}")
