@@ -136,10 +136,10 @@ def get(session):
                 Form(
                     Div(
                         Input(type="text", name="username", placeholder="Spielername", cls="w-full border border-gray-300 rounded-l p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"),
-                        Button("Hinzufügen", type="submit", cls="bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-r transition duration-300 ease-in-out"),
+                        Button("Hinzufügen", type="submit", cls="bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-r transition duration-300 ease-in-out disabled:bg-gray-400 disabled:cursor-not-allowed"),
                         cls="flex"
                     ),
-                    hx_post="/add-user", hx_target="#score-table-container", hx_swap="outerHTML", **{'hx-on::after-request': "this.reset()"},
+                    hx_post="/add-user", hx_target="#score-table-container", hx_swap="outerHTML", **{'hx-on::after-request': "this.reset()"}, hx_disabled_elt="find button",
                     cls="max-w-md mx-auto mb-6"
                 ),
                 Div(
