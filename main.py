@@ -85,7 +85,7 @@ def get_score_table(session):
             ),
             *[Tr(
                 Td(Div(Span(category, cls="mr-2"), Span("ⓘ", cls="cursor-pointer", **{"@mouseenter": "tooltip = true", "@mouseleave": "tooltip = false"}),
-                        Div(description, cls="absolute bg-gray-800 text-white p-2 rounded shadow-lg z-10 mt-1", x_show="tooltip"),
+                        Div(description, cls="absolute bg-gray-800 text-white p-2 rounded shadow-md z-10 mt-1", x_show="tooltip"),
                         cls="relative"), cls="border p-2", x_data="{ tooltip: false }"),
                 *[Td(get_score_input(user, category, scores.get(user, {}).get(category)), cls="border p-2") for user in users]
             ) for category, description in categories.items()],
@@ -117,22 +117,26 @@ def get(session):
     It contains the title, description, and a form to add players.
     """
     return Div(
-        Div(Div(Span("🎲", cls="text-6xl mb-2"), H1("Kniffel Online", cls="text-4xl font-bold text-blue-600 mb-2"), cls="flex flex-col items-center"),
-            P("Würfelspaß für die ganze Familie", cls="text-xl text-gray-600 mb-6"),
-            cls="bg-gradient-to-r from-blue-100 to-blue-200 p-10 rounded-lg shadow-lg text-center mb-8"),
-        Div(H2("Spieler hinzufügen", cls="text-xl font-semibold mb-4"),
-            Form(Div(Input(type="text", name="username", placeholder="Spielername", cls="w-full border border-gray-300 rounded-l p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"),
-                     Button("Hinzufügen", type="submit", cls="bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-r transition duration-300 ease-in-out"),
-                     cls="flex shadow-sm"),
-                 hx_post="/add-user", hx_target="#score-table-container", hx_swap="outerHTML", **{'hx-on::after-request': "this.reset()"},
-                 cls="max-w-md mx-auto"),
-            cls="bg-white p-6 rounded-lg shadow-md mb-8"),
-        Div(Div(id="score-table", cls="mt-4", hx_get="/score-table", hx_trigger="load"),
-            id="score-table-container"),
-        Footer(P("Created by ", A("@rasmus1610", href="https://twitter.com/rasmus1610", target="_blank", cls="text-blue-500 hover:text-blue-700"),
-                 " | ", A("GitHub", href="https://github.com/vacmar01/kniffel", target="_blank", cls="text-blue-500 hover:text-blue-700"),
-                 cls="text-center text-gray-600"), cls="mt-8 pb-4"),
-        cls="container mx-auto p-4"
+            Div(Div(Span("🎲", cls="text-6xl mb-2"), H1("Kniffel Online", cls="text-4xl font-bold text-blue-600 mb-2"), cls="flex flex-col items-center"),
+                P("Würfelspaß für die ganze Familie", cls="text-xl text-gray-600 mb-6"),
+                cls="container mx-auto"),
+            cls="bg-gradient-to-r from-blue-100 to-blue-200 p-10 text-center mb-8 w-full"), Div(
+        Div(
+            Div(H2("Spieler hinzufügen", cls="text-xl font-semibold mb-4 text-center"),
+                Form(Div(Input(type="text", name="username", placeholder="Spielername", cls="w-full border border-gray-300 rounded-l p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"),
+                         Button("Hinzufügen", type="submit", cls="bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-r transition duration-300 ease-in-out"),
+                         cls="flex shadow-md"),
+                     hx_post="/add-user", hx_target="#score-table-container", hx_swap="outerHTML", **{'hx-on::after-request': "this.reset()"},
+                     cls="max-w-md mx-auto"),
+                cls="bg-white p-6 rounded-lg shadow-md -mt-16 mx-auto"),
+            Div(Div(id="score-table", cls="mt-4", hx_get="/score-table", hx_trigger="load"),
+                id="score-table-container"),
+            Footer(P("Created by ", A("@rasmus1610", href="https://twitter.com/rasmus1610", target="_blank", cls="text-blue-500 hover:text-blue-700"),
+                     " | ", A("GitHub", href="https://github.com/vacmar01/kniffel", target="_blank", cls="text-blue-500 hover:text-blue-700"),
+                     cls="text-center text-gray-600"), cls="mt-8 pb-4"),
+            cls="container mx-auto"
+        ),
+        cls="mx-auto"
     )
 
 @rt("/add-user")
@@ -174,7 +178,18 @@ def post(session, user: str, category: str, value: str):
     Update the score for a user and category.
     """
     scores = session.get("scores", {})
-    scores.setdefault(user, {})[category] = fixed_scores.get(category, int(value) if value else None) if value != "" else None
+    scores.setdefault(user, {})
+    
+    if value == "":
+        scores[user][category] = None
+    elif category in fixed_scores:
+        if value == "0":  # "Gestrichen"
+            scores[user][category] = 0
+        else:  # "Gewürfelt"
+            scores[user][category] = fixed_scores[category]
+    else:
+        scores[user][category] = int(value) if value else None
+    
     session["scores"] = scores
     return get_score_table_container(session)
 
