@@ -73,7 +73,7 @@ def get_score_table(session):
         ) for user in users])),
         Tbody(
             Tr(
-                Td("Fehlende Kategorien", cls="border p-2 text-gray-500 text-sm"),
+                Td("Fehlende Kombinationen", cls="border p-2 text-gray-500 text-sm"),
                 *[Td(
                     Div(
                         *[Div(cat, cls="bg-gray-100 text-gray-600 text-xs font-normal mr-1 px-2 py-0.5 rounded") 
@@ -123,7 +123,7 @@ def get(session):
     return Title('Kniffel Online'), Div(
         Div(
             Div(Span("🎲", cls="text-6xl mb-2"), H1("Kniffel Online", cls="text-4xl font-bold text-blue-600 mb-2"), cls="flex flex-col items-center"),
-            P("Spiele Kniffel mit deinen Freunden", cls="text-xl text-gray-600 mb-6"),
+            P("Spiele Kniffel online mit deinen Freunden", cls="text-xl text-gray-600 mb-6"),
             cls="container mx-auto"
         ),
         cls="bg-gradient-to-r from-blue-100 to-blue-200 p-10 text-center mb-8 w-full"
@@ -146,10 +146,10 @@ def get(session):
                 ),
                 cls="bg-white p-6 rounded-lg mx-auto shadow-md"
             ),
-            # Div(
-            #     Div(md_content, cls="marked prose prose-lg mx-auto"),
-            #     cls="bg-white p-6 rounded-lg shadow-md mt-8"
-            # ),
+            Div(
+                Div(md_content, cls="marked prose prose-lg mx-auto"),
+                cls="bg-white p-6 rounded-lg shadow-md mt-8"
+            ),
             Footer(
                 P("Created by ", A("@rasmus1610", href="https://twitter.com/rasmus1610", target="_blank", cls="text-blue-500 hover:text-blue-700"),
                   " | ", A("GitHub", href="https://github.com/vacmar01/kniffel", target="_blank", cls="text-blue-500 hover:text-blue-700"),
