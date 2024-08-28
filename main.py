@@ -124,19 +124,27 @@ def get(session):
     
     return Title('onlinekniffel.de - Kniffel online spielen'), Div(
         Div(
-            Div(Span("🎲", cls="text-6xl mb-2"), H1("Kniffel Online", cls="text-4xl font-bold text-blue-600 mb-2"), cls="flex flex-col items-center"),
+            Div(
+                Div(
+                    Span("Sende Feedback", cls="mr-2 font-bold text-blue-600", x_show="showFeedback"),
+                    A("📧", href="mailto:mariusvach@gmail.com", cls="text-4xl relative", target="_blank", **{"@mouseenter": "showFeedback = true", "@mouseleave": "showFeedback = false"}),
+                    cls="inline-flex items-center", x_data="{ showFeedback: false }"
+                ),
+                cls="w-full bg-transparent py-4 px-6 flex justify-end"
+            ),
+            Div(Span("🎲", cls="text-6xl mb-2"), H1("Kniffel Online", cls="text-4xl font-bold text-blue-600 mb-2"), cls="flex flex-col items-center mt-10"),
             P("Spiele Kniffel online mit deinen Freunden", cls="text-xl text-gray-600 mb-6"),
             cls="container mx-auto"
         ),
-        cls="bg-gradient-to-r from-blue-100 to-blue-200 p-10 text-center mb-8 w-full"
+        cls="bg-gradient-to-r from-blue-100 to-blue-200 pb-20 text-center mb-8 w-full"
     ), Div(
         Div(
             Div(
                 H2("Spieler hinzufügen", cls="text-xl font-semibold mb-4 text-center"),
                 Form(
                     Div(
-                        Input(type="text", name="username", placeholder="Spielername", cls="w-full border border-gray-300 rounded-l p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"),
-                        Button("Hinzufügen", type="submit", cls="bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-r transition duration-300 ease-in-out disabled:bg-gray-400 disabled:cursor-not-allowed"),
+                        Input(type="text", name="username", placeholder="Spielername", cls="w-full text-lg border border-gray-300 rounded-l p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"),
+                        Button("Hinzufügen", type="submit", cls="bg-blue-500 hover:bg-blue-600 text-lg text-white p-2 rounded-r transition duration-300 ease-in-out disabled:bg-gray-400 disabled:cursor-not-allowed"),
                         cls="flex"
                     ),
                     hx_post="/add-user", hx_target="#score-table-container", hx_swap="outerHTML", **{'hx-on::after-request': "this.reset()"}, hx_disabled_elt="find button",
