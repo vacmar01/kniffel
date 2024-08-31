@@ -1,3 +1,7 @@
+## Kniffelblock online
+
+Auf onlinekniffel.de kannst du Kniffel online spielen. Spiele mit echten Würfeln und nutze die Website um den Überblick über die Punkte zu behalten. Du kannst so viele Spieler wie du möchtest hinzufügen. Die Punkte werden automatisch berechnet.
+
 ## Was ist Kniffel?
 
 Kniffel ist ein beliebtes Würfelspiel, das auch unter dem Namen Yahtzee bekannt ist. Es wurde in den 1950er Jahren erfunden und hat seitdem Millionen von Spielern weltweit begeistert. Das Spiel kombiniert Glück und Strategie und eignet sich hervorragend für Spieleabende mit Familie und Freunden.

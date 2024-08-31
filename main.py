@@ -126,9 +126,9 @@ def Navbar():
 def Hero():
     return Div(
             Span("🎲", cls="text-6xl mb-2"), 
-            H1("Kniffel Online", cls="text-4xl font-bold text-gray-100 mb-2"), 
+            H1("onlinekniffel.de", cls="text-4xl font-bold text-gray-100 mb-2"), 
             cls="flex flex-col items-center mt-10"
-        ), P("Spiele Kniffel online mit deinen Freunden", cls="text-xl text-gray-300 mb-6")
+        ), P("Kniffelblock online - kostenlos, ohne Registrierung", cls="text-xl text-gray-300 mb-6")
 
     
 def Header():
@@ -174,7 +174,7 @@ def get(session):
     with open('content.md', 'r', encoding='utf-8') as file:
         md_content = file.read()
     
-    return Title('onlinekniffel.de - Kniffel online spielen'), Header(), Div(
+    return Title('onlinekniffel.de - Kniffelblock online'), Header(), Div(
         Div(
             MyCard(
                 H2("Spieler hinzufügen", cls="text-xl font-semibold mb-4 text-center"),
