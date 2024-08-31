@@ -159,12 +159,8 @@ def AddPlayerForm():
     )
     
 def MyCard(*args, **kwargs):
-    existing_cls = "bg-white p-6 rounded-lg shadow-md"
-    if 'cls' in kwargs:
-        kwargs['cls'] = f"{existing_cls} {kwargs['cls']}"
-    else:
-        kwargs['cls'] = existing_cls
-    return Div(*args, **kwargs)
+    cls = f"bg-white p-6 rounded-lg shadow-md {kwargs.pop('cls', '')}"
+    return Div(*args, **kwargs, cls=cls)
 
 
 @rt("/")
@@ -198,6 +194,7 @@ def get(session):
                   cls="text-center text-gray-600"),
                 cls="py-12"
             ),
+            Script(defer=True, data_domain='onlinekniffel.de', src='https://plausible.io/js/script.js'),
             cls="container mx-auto -mt-32"
         )
     )
