@@ -6,7 +6,8 @@ app, rt = fast_app(
         Script(src="https://cdn.tailwindcss.com?plugins=typography"),
         Script(src="https://unpkg.com/htmx.org@1.9.10"),
         Script(src="https://unpkg.com/alpinejs@3.13.3/dist/cdn.min.js", defer=True),
-        MarkdownJS()
+        MarkdownJS(),
+        Meta(name="description", content="Kniffelblock online - kostenlos, ohne Registrierung"),
     ),
     bodykw={"class": "bg-gray-50 flex flex-col min-h-screen"}
 )
