@@ -207,7 +207,7 @@ def post(session, username: str):
     """
     users = session.get("users", [])
     if username and username not in users:
-        users.append(username)
+        users.append(username.strip())
         session["users"] = users
     
     add_toast(session, f"{username} wurde hinzugefügt", "success")
@@ -251,7 +251,7 @@ def post(session, user: str, category: str, value: str):
         else:  # "Gewürfelt"
             scores[user][category] = fixed_scores[category]
     else:
-        scores[user][category] = int(value) if value else None
+        scores[user][category] = int(float(value)) if value else None
     
     session["scores"] = scores
     return ScoreTableContainer(session)
