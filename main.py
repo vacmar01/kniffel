@@ -8,6 +8,7 @@ app, rt = fast_app(
         Script(src="https://unpkg.com/alpinejs@3.13.3/dist/cdn.min.js", defer=True),
         MarkdownJS(),
         Meta(name="description", content="Kniffelblock online - kostenlos, ohne Registrierung"),
+        Script(defer=True, data_domain='onlinekniffel.de', src='https://plausible.io/js/script.pageview-props.tagged-events.js'),
     ),
     bodykw={"class": "bg-gray-50 flex flex-col min-h-screen"}
 )
@@ -152,7 +153,7 @@ def AddPlayerForm():
     return Form(
             Div(
                 Input(type="text", name="username", placeholder="Spielername", cls="w-full text-lg border border-gray-300 rounded-l p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"),
-                Button("Hinzufügen", type="submit", cls="bg-blue-500 hover:bg-blue-600 text-lg text-white p-2 rounded-r transition duration-300 ease-in-out disabled:bg-gray-400 disabled:cursor-not-allowed"),
+                Button("Hinzufügen", type="submit", cls="bg-blue-500 hover:bg-blue-600 text-lg text-white p-2 rounded-r transition duration-300 ease-in-out disabled:bg-gray-400 disabled:cursor-not-allowed plausible-event-name=Add+Player"),
                 cls="flex"
             ),
             hx_post="/add-user", hx_target="#score-table-container", hx_swap="outerHTML", **{'hx-on::after-request': "this.reset()"}, hx_disabled_elt="find button",
@@ -195,7 +196,6 @@ def get(session):
                   cls="text-center text-gray-600"),
                 cls="py-12"
             ),
-            Script(defer=True, data_domain='onlinekniffel.de', src='https://plausible.io/js/script.js'),
             cls="container mx-auto -mt-32"
         )
     )
