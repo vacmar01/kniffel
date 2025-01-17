@@ -150,7 +150,7 @@ def Header():
         style=style
     )
 
-def Banner(): return Div(cls="w-full flex items-center justify-center py-3 text-md text-gray-800 font-semibold bg-amber-400 border-b shadow border-amber-600")(Span(cls="mr-1")("🎲 Onlinekniffel.de gibt es bald auch als App."), A(href="#", cls="text-blue-500 hover:opacity-70 transition-all")("Erfahre mehr →"))
+def Banner(): return Div(cls="w-full flex items-center justify-center py-3 text-md text-gray-800 font-semibold bg-amber-400 border-b shadow border-amber-600")(Span(cls="mr-1")("🎲 Onlinekniffel.de gibt es bald auch als App."), A(href="#", onclick="plausible('More')", cls="text-blue-500 hover:opacity-70 transition-all")("Erfahre mehr →"))
 
 def AddPlayerForm():
     return Form(
