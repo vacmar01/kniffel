@@ -179,7 +179,7 @@ def get(session):
     with open('content.md', 'r', encoding='utf-8') as file:
         md_content = file.read()
 
-    return Title('onlinekniffel.de - Kniffelblock online'), Banner(), Header(), Div(
+    return Title('onlinekniffel.de - Kniffelblock online'), Header(), Div(
         Div(
             MyCard(
                 H2("Spieler hinzufügen", cls="text-xl font-semibold mb-4 text-center"),
