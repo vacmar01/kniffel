@@ -1,4 +1,4 @@
-## Kniffelblock online
+# Kniffelblock online
 
 Auf online-kniffel.de kannst du Kniffel online spielen. Spiele mit echten Würfeln und nutze die Website um den Überblick über die Punkte zu behalten. Du kannst so viele Spieler wie du möchtest hinzufügen. Die Punkte werden automatisch berechnet.
 

@@ -8,8 +8,8 @@ app, rt = fast_app(
         Script(src="https://unpkg.com/htmx.org@1.9.10"),
         Script(src="https://unpkg.com/alpinejs@3.13.3/dist/cdn.min.js", defer=True),
         Meta(name="description", content="Kniffelblock online - kostenlos, ohne Registrierung"),
-        Script(defer=True, data_domain='online-kniffel.de', src='https://plausible.io/js/script.js'),
-        Script("window.plausible = window.plausible || function() { (window.plausible.q = window.plausible.q || []).push(arguments) }")
+        Script(_async=True, src='https://plausible.io/js/pa-18b2DkMlaQkIpNDpUM7Rm.js'),
+        Script('window.plausible=window.plausible||function(){(plausible.q=plausible.q||[]).push(arguments)},plausible.init=plausible.init||function(i){plausible.o=i||{}};\n  plausible.init()')
     ),
     bodykw={"class": "bg-gray-50 flex flex-col min-h-screen"}
 )
@@ -70,36 +70,36 @@ def ScoreTable(session):
         return [cat for cat in categories if user_scores.get(cat) is None]
 
     return Table(
-        Thead(Tr(Th("Kategorie", cls="border p-2"), *[Th(
+        Thead(Tr(Th("Kategorie", cls="border border-gray-200 p-2"), *[Th(
             Div(user, Button("×", hx_post=f"/delete-user/{user}", hx_target="#score-table-container", hx_swap="outerHTML",
                              hx_confirm=f"Bist du sicher, dass du {user} entfernen möchtest?", cls="ml-2 text-red-500 font-bold"),
                 cls="flex justify-between items-center"),
-            cls="border p-2"
+            cls="border border-gray-200 p-2"
         ) for user in users])),
         Tbody(
             Tr(
-                Td("Fehlende Kombinationen", cls="border p-2 text-gray-500 text-sm"),
+                Td("Fehlende Kombinationen", cls="border border-gray-200 p-2 text-gray-500 text-sm"),
                 *[Td(
                     Div(
                         *[Div(cat, cls="bg-gray-100 text-gray-600 text-xs font-normal mr-1 px-2 py-0.5 rounded")
                           for cat in get_missing_categories(scores.get(user, {}))],
                         cls="flex flex-wrap gap-1"
                     ),
-                    cls="border p-2"
+                    cls="border border-gray-200 p-2"
                 ) for user in users],
                 cls="border-t border-b border-gray-200"
             ),
             *[Tr(
                 Td(Div(Span(category, cls="mr-2"), Span("ⓘ", cls="cursor-pointer", **{"@mouseenter": "tooltip = true", "@mouseleave": "tooltip = false"}),
                         Div(description, cls="absolute bg-gray-800 text-white p-2 rounded shadow-md z-10 mt-1", x_show="tooltip"),
-                        cls="relative"), cls="border p-2", x_data="{ tooltip: false }"),
-                *[Td(ScoreInput(user, category, scores.get(user, {}).get(category)), cls="border p-2") for user in users]
+                        cls="relative"), cls="border border-gray-200 p-2", x_data="{ tooltip: false }"),
+                *[Td(ScoreInput(user, category, scores.get(user, {}).get(category)), cls="border border-gray-200 p-2") for user in users]
             ) for category, description in categories.items()],
-            *[Tr(Td(label, cls="border p-2 font-bold"),
-                 *[Td(str(value), cls="border p-2 font-bold") for value in [calculate_scores(scores.get(user, {}))[i] for user in users]])
+            *[Tr(Td(label, cls="border border-gray-200 p-2 font-bold"),
+                 *[Td(str(value), cls="border border-gray-200 p-2 font-bold") for value in [calculate_scores(scores.get(user, {}))[i] for user in users]])
               for i, label in enumerate(["Oberer Teil Summe", "Bonus (bei 63 oder mehr)", "Gesamtsumme"])],
         ),
-        cls="w-full border-collapse", id="score-table"
+        cls="w-full border-collapse bg-white", id="score-table"
     )
 
 def ScoreTableContainer(session):
@@ -109,7 +109,7 @@ def ScoreTableContainer(session):
     """
     has_players = bool(session.get("users"))
     return Div(
-        ScoreTable(session),
+        Div(ScoreTable(session), cls="rounded-xl overflow-hidden border border-gray-200"),
         Button("Punktestand zurücksetzen", hx_post="/reset-scores", hx_target="#score-table-container", hx_swap="outerHTML",
                hx_confirm="Sind Sie sicher, dass Sie alle Punkte zurücksetzen möchten?",
                cls="mt-4 bg-red-500 hover:bg-red-600 text-white p-2 rounded transition duration-300 ease-in-out") if has_players else None,
@@ -191,7 +191,7 @@ def get(session):
                 ),
             ),
             MyCard(
-                Div(NotStr(content_html), cls="prose prose-lg prose-slate mx-auto"),
+                Div(NotStr(content_html), cls="prose prose-lg prose-zinc max-w-3xl mx-auto"),
                 cls="mt-8"
             ),
             Footer(
