@@ -1,0 +1,29 @@
+{
+  "name": "kniffel",
+  "version": "1.0.0",
+  "description": "built with FastHTML, HTMX, AlpineJS and TailwindCSS.",
+  "main": "index.js",
+  "scripts": {
+    "build:css": "tailwindcss -i ./assets/tailwind.css -o ./static/styles.css --minify",
+    "watch:css": "tailwindcss -i ./assets/tailwind.css -o ./static/styles.css --watch"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vacmar01/kniffel.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/vacmar01/kniffel/issues"
+  },
+  "homepage": "https://github.com/vacmar01/kniffel#readme",
+  "devDependencies": {
+    "@tailwindcss/cli": "^4.2.1",
+    "tailwindcss": "^4.2.1"
+  },
+  "dependencies": {
+    "typrose": "^0.1.2"
+  }
+}

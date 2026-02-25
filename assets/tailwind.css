@@ -1,0 +1,10 @@
+@import "tailwindcss";
+@import "typrose/typrose.css";
+
+@source "../main.py";
+@source "../content.md";
+
+.prose {
+  --prose-font-scale: 1.02;
+  --prose-scale: 0.9;
+}

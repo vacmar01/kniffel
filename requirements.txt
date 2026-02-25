@@ -1,3 +1,4 @@
 python-fasthtml==0.6.2
 sqlite_minutils
 pytest
+mistletoe

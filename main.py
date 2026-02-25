@@ -1,14 +1,14 @@
 from fasthtml.common import *
+import mistletoe
 
 app, rt = fast_app(
     pico=False,
     hdrs=(
-        Script(src="https://cdn.tailwindcss.com?plugins=typography"),
+        Link(rel="stylesheet", href="/static/styles.css"),
         Script(src="https://unpkg.com/htmx.org@1.9.10"),
         Script(src="https://unpkg.com/alpinejs@3.13.3/dist/cdn.min.js", defer=True),
-        MarkdownJS(),
         Meta(name="description", content="Kniffelblock online - kostenlos, ohne Registrierung"),
-        Script(defer=True, data_domain='onlinekniffel.de', src='https://plausible.io/js/script.js'),
+        Script(defer=True, data_domain='online-kniffel.de', src='https://plausible.io/js/script.js'),
         Script("window.plausible = window.plausible || function() { (window.plausible.q = window.plausible.q || []).push(arguments) }")
     ),
     bodykw={"class": "bg-gray-50 flex flex-col min-h-screen"}
@@ -129,7 +129,7 @@ def Navbar():
 def Hero():
     return Div(
             Span("🎲", cls="text-6xl mb-2"),
-            H1("onlinekniffel.de", cls="text-4xl font-bold text-gray-100 mb-2"),
+            H1("online-kniffel.de", cls="text-4xl font-bold text-gray-100 mb-2"),
             cls="flex flex-col items-center mt-10"
         ), P("Kniffelblock online - kostenlos, ohne Registrierung", cls="text-xl text-gray-300 mb-6")
 
@@ -150,7 +150,7 @@ def Header():
         style=style
     )
 
-def Banner(): return Div(cls="w-full flex items-center justify-center py-3 text-md text-gray-800 font-semibold bg-amber-400 border-b shadow border-amber-600")(Span(cls="mr-1")("🎲 Onlinekniffel.de gibt es bald auch als App."), A(href="#", onclick="plausible('More')", cls="text-blue-500 hover:opacity-70 transition-all")("Erfahre mehr →"))
+def Banner(): return Div(cls="w-full flex items-center justify-center py-3 text-md text-gray-800 font-semibold bg-amber-400 border-b shadow border-amber-600")(Span(cls="mr-1")("🎲 Online-Kniffel.de gibt es bald auch als App."), A(href="#", onclick="plausible('More')", cls="text-blue-500 hover:opacity-70 transition-all")("Erfahre mehr →"))
 
 def AddPlayerForm():
     return Form(
@@ -178,8 +178,9 @@ def get(session):
     #read in content.md with the content for the home page
     with open('content.md', 'r', encoding='utf-8') as file:
         md_content = file.read()
+    content_html = mistletoe.markdown(md_content)
 
-    return Title('onlinekniffel.de - Kniffelblock online'), Header(), Div(
+    return Title('online-kniffel.de - Kniffelblock online'), Header(), Div(
         Div(
             MyCard(
                 H2("Spieler hinzufügen", cls="text-xl font-semibold mb-4 text-center"),
@@ -190,7 +191,7 @@ def get(session):
                 ),
             ),
             MyCard(
-                Div(md_content, cls="marked prose prose-lg mx-auto"),
+                Div(NotStr(content_html), cls="prose prose-lg prose-slate mx-auto"),
                 cls="mt-8"
             ),
             Footer(
