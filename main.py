@@ -43,7 +43,7 @@ def ScoreInput(user, category, value):
         "hx_post": f"/update-score/{user}/{category}",
         "hx_target": "#score-table-container",
         "hx_swap": "outerHTML",
-        "cls": "w-full p-1 border rounded"
+        "cls": "w-full p-1 text-sm border border-gray-300 min-w-0"
     }
     if category in fixed_scores:
         return Select(
@@ -61,7 +61,12 @@ def ScoreTable(session):
     """
     users, scores = session.get("users", []), session.get("scores", {})
     if not users:
-        return Div("Füge Spieler hinzu, um das Spiel zu beginnen.", cls="italic text-gray-500", id="score-table")
+        return Div(
+            Div("🎲", cls="text-6xl mb-4"),
+            Div("Noch keine Spieler", cls="text-lg font-semibold text-gray-700 mb-2"),
+            Div("Füge oben Spieler hinzu, um das Spiel zu beginnen", cls="text-gray-500"),
+            cls="flex flex-col items-center justify-center py-16 text-center", id="score-table"
+        )
 
     def get_missing_categories(user_scores):
         """
@@ -70,15 +75,15 @@ def ScoreTable(session):
         return [cat for cat in categories if user_scores.get(cat) is None]
 
     return Table(
-        Thead(Tr(Th("Kategorie", cls="border border-gray-200 p-2"), *[Th(
+        Thead(Tr(Th("Kategorie", cls="border border-gray-200 p-2 w-32"), *[Th(
             Div(user, Button("×", hx_post=f"/delete-user/{user}", hx_target="#score-table-container", hx_swap="outerHTML",
-                             hx_confirm=f"Bist du sicher, dass du {user} entfernen möchtest?", cls="ml-2 text-red-500 font-bold"),
-                cls="flex justify-between items-center"),
-            cls="border border-gray-200 p-2"
+                             hx_confirm=f"Bist du sicher, dass du {user} entfernen möchtest?", cls="ml-2 text-red-500 font-bold text-sm"),
+                cls="flex justify-between items-center text-sm"),
+            cls="border border-gray-200 p-2 min-w-24"
         ) for user in users])),
         Tbody(
             Tr(
-                Td("Fehlende Kombinationen", cls="border border-gray-200 p-2 text-gray-500 text-sm"),
+                Td("Fehlende", cls="border border-gray-200 p-2 text-gray-500 text-sm"),
                 *[Td(
                     Div(
                         *[Div(cat, cls="bg-gray-100 text-gray-600 text-xs font-normal mr-1 px-2 py-0.5 rounded")
@@ -86,20 +91,19 @@ def ScoreTable(session):
                         cls="flex flex-wrap gap-1"
                     ),
                     cls="border border-gray-200 p-2"
-                ) for user in users],
-                cls="border-t border-b border-gray-200"
+                ) for user in users]
             ),
             *[Tr(
-                Td(Div(Span(category, cls="mr-2"), Span("ⓘ", cls="cursor-pointer", **{"@mouseenter": "tooltip = true", "@mouseleave": "tooltip = false"}),
-                        Div(description, cls="absolute bg-gray-800 text-white p-2 rounded shadow-md z-10 mt-1", x_show="tooltip"),
-                        cls="relative"), cls="border border-gray-200 p-2", x_data="{ tooltip: false }"),
-                *[Td(ScoreInput(user, category, scores.get(user, {}).get(category)), cls="border border-gray-200 p-2") for user in users]
+                Td(Div(Span(category, cls="mr-1 text-sm"), Span("ⓘ", cls="cursor-pointer text-xs", **{"@mouseenter": "tooltip = true", "@mouseleave": "tooltip = false"}),
+                        Div(description, cls="absolute bg-gray-800 text-white p-2 rounded shadow-md z-10 mt-1 text-xs w-48", x_show="tooltip"),
+                        cls="relative"), cls="border border-gray-200 p-1", x_data="{ tooltip: false }"),
+                *[Td(ScoreInput(user, category, scores.get(user, {}).get(category)), cls="border border-gray-200 p-1") for user in users]
             ) for category, description in categories.items()],
-            *[Tr(Td(label, cls="border border-gray-200 p-2 font-bold"),
-                 *[Td(str(value), cls="border border-gray-200 p-2 font-bold") for value in [calculate_scores(scores.get(user, {}))[i] for user in users]])
-              for i, label in enumerate(["Oberer Teil Summe", "Bonus (bei 63 oder mehr)", "Gesamtsumme"])],
+            *[Tr(Td(label, cls="border border-gray-200 p-2 font-bold text-sm"),
+                 *[Td(str(value), cls="border border-gray-200 p-2 font-bold text-sm") for value in [calculate_scores(scores.get(user, {}))[i] for user in users]])
+               for i, label in enumerate(["Oberer Teil Summe", "Bonus (bei 63 oder mehr)", "Gesamtsumme"])],
         ),
-        cls="w-full border-collapse bg-white", id="score-table"
+        cls="w-full border-collapse bg-white text-sm", id="score-table"
     )
 
 def ScoreTableContainer(session):
@@ -109,7 +113,7 @@ def ScoreTableContainer(session):
     """
     has_players = bool(session.get("users"))
     return Div(
-        Div(ScoreTable(session), cls="rounded-xl overflow-hidden border border-gray-200"),
+        Div(ScoreTable(session), cls="overflow-x-auto"),
         Button("Punktestand zurücksetzen", hx_post="/reset-scores", hx_target="#score-table-container", hx_swap="outerHTML",
                hx_confirm="Sind Sie sicher, dass Sie alle Punkte zurücksetzen möchten?",
                cls="mt-4 bg-red-500 hover:bg-red-600 text-white p-2 rounded transition duration-300 ease-in-out") if has_players else None,
@@ -121,7 +125,7 @@ def Navbar():
         Div(
             Span("Sende Feedback", cls="mr-2 font-bold text-gray-100", x_transition=True, x_show="showFeedback"),
             A("📧", href="mailto:mariusvach@gmail.com", cls="text-4xl relative", target="_blank", **{"@mouseenter": "showFeedback = true", "@mouseleave": "showFeedback = false"}),
-            cls="inline-flex items-center", x_data="{ showFeedback: false }"
+            cls="inline-flex items-center pr-4", x_data="{ showFeedback: false }"
         ),
         cls="w-full bg-transparent py-4 flex justify-end"
     )
