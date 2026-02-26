@@ -4,9 +4,8 @@ import mistletoe
 app, rt = fast_app(
     pico=False,
     hdrs=(
-        Link(rel="stylesheet", href="/static/styles.css"),
-        Script(src="https://unpkg.com/htmx.org@1.9.10"),
-        Script(src="https://unpkg.com/alpinejs@3.13.3/dist/cdn.min.js", defer=True),
+        Link(rel="stylesheet", href="/static/bundle.css"),
+        Script(src="/static/bundle.js"),
         Meta(name="description", content="Kniffelblock online - kostenlos, ohne Registrierung"),
         Script(_async=True, src='https://plausible.io/js/pa-18b2DkMlaQkIpNDpUM7Rm.js'),
         Script('window.plausible=window.plausible||function(){(plausible.q=plausible.q||[]).push(arguments)},plausible.init=plausible.init||function(i){plausible.o=i||{}};\n  plausible.init()')
@@ -272,4 +271,14 @@ def post(session):
     session["scores"] = {user: {} for user in session.get("users", [])}
     return ScoreTableContainer(session)
 
-serve()
+import sys
+
+# Get port from command line, but only if it looks like a port number
+port = 5001
+if len(sys.argv) > 1:
+    try:
+        port = int(sys.argv[1])
+    except ValueError:
+        pass  # Not a valid port, use default
+
+serve(port=port)
