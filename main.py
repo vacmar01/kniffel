@@ -1,5 +1,6 @@
 from fasthtml.common import *
 import mistletoe
+from starlette.staticfiles import StaticFiles
 
 app, rt = fast_app(
     pico=False,
@@ -12,6 +13,9 @@ app, rt = fast_app(
     ),
     bodykw={"class": "bg-gray-50 flex flex-col min-h-screen"}
 )
+
+# Explicitly mount static files for Railway compatibility
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
 setup_toasts(app)
 
