@@ -5,7 +5,7 @@ app, rt = fast_app(
     pico=False,
     hdrs=(
         Link(rel="stylesheet", href="/static/bundle.css"),
-        Script(src="/static/bundle.js"),
+        Script(src="/static/bundle.js", _defer=True),
         Meta(name="description", content="Kniffelblock online - kostenlos, ohne Registrierung"),
         Script(_async=True, src='https://plausible.io/js/pa-18b2DkMlaQkIpNDpUM7Rm.js'),
         Script('window.plausible=window.plausible||function(){(plausible.q=plausible.q||[]).push(arguments)},plausible.init=plausible.init||function(i){plausible.o=i||{}};\n  plausible.init()')
