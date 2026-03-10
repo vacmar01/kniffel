@@ -6,12 +6,22 @@ app, rt = fast_app(
     pico=False,
     hdrs=(
         Link(rel="stylesheet", href="/static/bundle.css"),
-        Script(src="/static/bundle.js", _defer=True),
-        Meta(name="description", content="Kniffelblock online - kostenlos, ohne Registrierung"),
-        Script(_async=True, src='https://plausible.io/js/pa-18b2DkMlaQkIpNDpUM7Rm.js'),
-        Script('window.plausible=window.plausible||function(){(plausible.q=plausible.q||[]).push(arguments)},plausible.init=plausible.init||function(i){plausible.o=i||{}};\n  plausible.init()')
+        Script(src="/static/bundle.js", defer=""),
+        Meta(
+            name="description",
+            content="Kniffelblock online - kostenlos, ohne Registrierung",
+        ),
+        Script(
+            **{
+                "src": "https://plausible.io/js/pa-18b2DkMlaQkIpNDpUM7Rm.js",
+                "async": "",
+            }
+        ),
+        Script(
+            "window.plausible=window.plausible||function(){(plausible.q=plausible.q||[]).push(arguments)},plausible.init=plausible.init||function(i){plausible.o=i||{}};\n  plausible.init()"
+        ),
     ),
-    bodykw={"class": "bg-gray-50 flex flex-col min-h-screen"}
+    bodykw={"class": "bg-gray-50 flex flex-col min-h-screen"},
 )
 
 # Explicitly mount static files for Railway compatibility
@@ -20,13 +30,28 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 setup_toasts(app)
 
 categories = {
-    "Einser": "Zähle nur die Einser", "Zweier": "Zähle nur die Zweier", "Dreier": "Zähle nur die Dreier",
-    "Vierer": "Zähle nur die Vierer", "Fünfer": "Zähle nur die Fünfer", "Sechser": "Zähle nur die Sechser",
-    "Dreierpasch": "Drei gleiche Augen, Summe aller Augen zählen", "Viererpasch": "Vier gleiche Augen, Summe aller Augen zählen", "Full House": "3 gleiche Augen und 2 gleiche Augen, 25 Punkte",
-    "Kleine Straße": "4 aufeinanderfolgende Augen, 30 Punkte", "Große Straße": "5 aufeinanderfolgende Augen, 40 Punkte", "Kniffel": "5 gleiche Augen, 50 Punkte", "Chance": "Summe aller Augen"
+    "Einser": "Zähle nur die Einser",
+    "Zweier": "Zähle nur die Zweier",
+    "Dreier": "Zähle nur die Dreier",
+    "Vierer": "Zähle nur die Vierer",
+    "Fünfer": "Zähle nur die Fünfer",
+    "Sechser": "Zähle nur die Sechser",
+    "Dreierpasch": "Drei gleiche Augen, Summe aller Augen zählen",
+    "Viererpasch": "Vier gleiche Augen, Summe aller Augen zählen",
+    "Full House": "3 gleiche Augen und 2 gleiche Augen, 25 Punkte",
+    "Kleine Straße": "4 aufeinanderfolgende Augen, 30 Punkte",
+    "Große Straße": "5 aufeinanderfolgende Augen, 40 Punkte",
+    "Kniffel": "5 gleiche Augen, 50 Punkte",
+    "Chance": "Summe aller Augen",
 }
-fixed_scores = {"Full House": 25, "Kleine Straße": 30, "Große Straße": 40, "Kniffel": 50}
+fixed_scores = {
+    "Full House": 25,
+    "Kleine Straße": 30,
+    "Große Straße": 40,
+    "Kniffel": 50,
+}
 upper_section = ["Einser", "Zweier", "Dreier", "Vierer", "Fünfer", "Sechser"]
+
 
 def calculate_scores(user_scores):
     """
@@ -34,8 +59,17 @@ def calculate_scores(user_scores):
     """
     upper_total = sum(user_scores.get(cat, 0) or 0 for cat in upper_section)
     bonus = 35 if upper_total >= 63 else 0
-    total = upper_total + bonus + sum(user_scores.get(cat, 0) or 0 for cat in categories if cat not in upper_section)
+    total = (
+        upper_total
+        + bonus
+        + sum(
+            user_scores.get(cat, 0) or 0
+            for cat in categories
+            if cat not in upper_section
+        )
+    )
     return upper_total, bonus, total
+
 
 def ScoreInput(user, category, value):
     """
@@ -46,17 +80,27 @@ def ScoreInput(user, category, value):
         "hx_post": f"/update-score/{user}/{category}",
         "hx_target": "#score-table-container",
         "hx_swap": "outerHTML",
-        "cls": "w-full p-1 text-sm border border-gray-300 min-w-0"
+        "cls": "w-full p-1 text-sm border border-gray-300 min-w-0",
     }
     if category in fixed_scores:
         return Select(
             Option("", value="", selected=value is None),
-            Option("Gewürfelt", value=str(fixed_scores[category]), selected=value == fixed_scores[category]),
+            Option(
+                "Gewürfelt",
+                value=str(fixed_scores[category]),
+                selected=value == fixed_scores[category],
+            ),
             Option("Gestrichen", value="0", selected=value == 0),
             hx_trigger="change",
-            **common_attrs
+            **common_attrs,
         )
-    return Input(type="number", value=value if value is not None else "", hx_trigger="blur", **common_attrs)
+    return Input(
+        type="number",
+        value=value if value is not None else "",
+        hx_trigger="blur",
+        **common_attrs,
+    )
+
 
 def ScoreTable(session):
     """
@@ -67,8 +111,11 @@ def ScoreTable(session):
         return Div(
             Div("🎲", cls="text-6xl mb-4"),
             Div("Noch keine Spieler", cls="text-lg font-semibold text-gray-700 mb-2"),
-            Div("Füge oben Spieler hinzu, um das Spiel zu beginnen", cls="text-gray-500"),
-            cls="flex flex-col items-center justify-center py-16 text-center", id="score-table"
+            Div(
+                "Füge oben Spieler hinzu, um das Spiel zu beginnen", cls="text-gray-500"
+            ),
+            cls="flex flex-col items-center justify-center py-16 text-center",
+            id="score-table",
         )
 
     def get_missing_categories(user_scores):
@@ -78,36 +125,106 @@ def ScoreTable(session):
         return [cat for cat in categories if user_scores.get(cat) is None]
 
     return Table(
-        Thead(Tr(Th("Kategorie", cls="border border-gray-200 p-2 w-32"), *[Th(
-            Div(user, Button("×", hx_post=f"/delete-user/{user}", hx_target="#score-table-container", hx_swap="outerHTML",
-                             hx_confirm=f"Bist du sicher, dass du {user} entfernen möchtest?", cls="ml-2 text-red-500 font-bold text-sm"),
-                cls="flex justify-between items-center text-sm"),
-            cls="border border-gray-200 p-2 min-w-24"
-        ) for user in users])),
+        Thead(
+            Tr(
+                Th("Kategorie", cls="border border-gray-200 p-2 w-32"),
+                *[
+                    Th(
+                        Div(
+                            user,
+                            Button(
+                                "×",
+                                hx_post=f"/delete-user/{user}",
+                                hx_target="#score-table-container",
+                                hx_swap="outerHTML",
+                                hx_confirm=f"Bist du sicher, dass du {user} entfernen möchtest?",
+                                cls="ml-2 text-red-500 font-bold text-sm",
+                            ),
+                            cls="flex justify-between items-center text-sm",
+                        ),
+                        cls="border border-gray-200 p-2 min-w-24",
+                    )
+                    for user in users
+                ],
+            )
+        ),
         Tbody(
             Tr(
                 Td("Fehlende", cls="border border-gray-200 p-2 text-gray-500 text-sm"),
-                *[Td(
-                    Div(
-                        *[Div(cat, cls="bg-gray-100 text-gray-600 text-xs font-normal mr-1 px-2 py-0.5 rounded")
-                          for cat in get_missing_categories(scores.get(user, {}))],
-                        cls="flex flex-wrap gap-1"
-                    ),
-                    cls="border border-gray-200 p-2"
-                ) for user in users]
+                *[
+                    Td(
+                        Div(
+                            *[
+                                Div(
+                                    cat,
+                                    cls="bg-gray-100 text-gray-600 text-xs font-normal mr-1 px-2 py-0.5 rounded",
+                                )
+                                for cat in get_missing_categories(scores.get(user, {}))
+                            ],
+                            cls="flex flex-wrap gap-1",
+                        ),
+                        cls="border border-gray-200 p-2",
+                    )
+                    for user in users
+                ],
             ),
-            *[Tr(
-                Td(Div(Span(category, cls="mr-1 text-sm"), Span("ⓘ", cls="cursor-pointer text-xs", **{"@mouseenter": "tooltip = true", "@mouseleave": "tooltip = false"}),
-                        Div(description, cls="absolute bg-gray-800 text-white p-2 rounded shadow-md z-10 mt-1 text-xs w-48", x_show="tooltip"),
-                        cls="relative"), cls="border border-gray-200 p-1", x_data="{ tooltip: false }"),
-                *[Td(ScoreInput(user, category, scores.get(user, {}).get(category)), cls="border border-gray-200 p-1") for user in users]
-            ) for category, description in categories.items()],
-            *[Tr(Td(label, cls="border border-gray-200 p-2 font-bold text-sm"),
-                 *[Td(str(value), cls="border border-gray-200 p-2 font-bold text-sm") for value in [calculate_scores(scores.get(user, {}))[i] for user in users]])
-               for i, label in enumerate(["Oberer Teil Summe", "Bonus (bei 63 oder mehr)", "Gesamtsumme"])],
+            *[
+                Tr(
+                    Td(
+                        Div(
+                            Span(category, cls="mr-1 text-sm"),
+                            Span(
+                                "ⓘ",
+                                cls="cursor-pointer text-xs",
+                                **{
+                                    "@mouseenter": "tooltip = true",
+                                    "@mouseleave": "tooltip = false",
+                                },
+                            ),
+                            Div(
+                                description,
+                                cls="absolute bg-gray-800 text-white p-2 rounded shadow-md z-10 mt-1 text-xs w-48",
+                                x_show="tooltip",
+                            ),
+                            cls="relative",
+                        ),
+                        cls="border border-gray-200 p-1",
+                        x_data="{ tooltip: false }",
+                    ),
+                    *[
+                        Td(
+                            ScoreInput(
+                                user, category, scores.get(user, {}).get(category)
+                            ),
+                            cls="border border-gray-200 p-1",
+                        )
+                        for user in users
+                    ],
+                )
+                for category, description in categories.items()
+            ],
+            *[
+                Tr(
+                    Td(label, cls="border border-gray-200 p-2 font-bold text-sm"),
+                    *[
+                        Td(
+                            str(value),
+                            cls="border border-gray-200 p-2 font-bold text-sm",
+                        )
+                        for value in [
+                            calculate_scores(scores.get(user, {}))[i] for user in users
+                        ]
+                    ],
+                )
+                for i, label in enumerate(
+                    ["Oberer Teil Summe", "Bonus (bei 63 oder mehr)", "Gesamtsumme"]
+                )
+            ],
         ),
-        cls="w-full border-collapse bg-white text-sm", id="score-table"
+        cls="w-full border-collapse bg-white text-sm",
+        id="score-table",
     )
+
 
 def ScoreTableContainer(session):
     """
@@ -117,28 +234,56 @@ def ScoreTableContainer(session):
     has_players = bool(session.get("users"))
     return Div(
         Div(ScoreTable(session), cls="overflow-x-auto"),
-        Button("Punktestand zurücksetzen", hx_post="/reset-scores", hx_target="#score-table-container", hx_swap="outerHTML",
-               hx_confirm="Sind Sie sicher, dass Sie alle Punkte zurücksetzen möchten?",
-               cls="mt-4 bg-red-500 hover:bg-red-600 text-white p-2 rounded transition duration-300 ease-in-out") if has_players else None,
-        cls="bg-white rounded-lg p-6", id="score-table-container"
+        Button(
+            "Punktestand zurücksetzen",
+            hx_post="/reset-scores",
+            hx_target="#score-table-container",
+            hx_swap="outerHTML",
+            hx_confirm="Sind Sie sicher, dass Sie alle Punkte zurücksetzen möchten?",
+            cls="mt-4 bg-red-500 hover:bg-red-600 text-white p-2 rounded transition duration-300 ease-in-out",
+        )
+        if has_players
+        else None,
+        cls="bg-white rounded-lg p-6",
+        id="score-table-container",
     )
+
 
 def Navbar():
     return Div(
         Div(
-            Span("Sende Feedback", cls="mr-2 font-bold text-gray-100", x_transition=True, x_show="showFeedback"),
-            A("📧", href="mailto:mariusvach@gmail.com", cls="text-4xl relative", target="_blank", **{"@mouseenter": "showFeedback = true", "@mouseleave": "showFeedback = false"}),
-            cls="inline-flex items-center pr-4", x_data="{ showFeedback: false }"
+            Span(
+                "Sende Feedback",
+                cls="mr-2 font-bold text-gray-100",
+                x_transition="",
+                x_show="showFeedback",
+            ),
+            A(
+                "📧",
+                href="mailto:mariusvach@gmail.com",
+                cls="text-4xl relative",
+                target="_blank",
+                **{
+                    "@mouseenter": "showFeedback = true",
+                    "@mouseleave": "showFeedback = false",
+                },
+            ),
+            cls="inline-flex items-center pr-4",
+            x_data="{ showFeedback: false }",
         ),
-        cls="w-full bg-transparent py-4 flex justify-end"
+        cls="w-full bg-transparent py-4 flex justify-end",
     )
+
 
 def Hero():
     return Div(
-            Span("🎲", cls="text-6xl mb-2"),
-            H1("online-kniffel.de", cls="text-4xl font-bold text-gray-100 mb-2"),
-            cls="flex flex-col items-center mt-10"
-        ), P("Kniffelblock online - kostenlos, ohne Registrierung", cls="text-xl text-gray-300 mb-6")
+        Span("🎲", cls="text-6xl mb-2"),
+        H1("online-kniffel.de", cls="text-4xl font-bold text-gray-100 mb-2"),
+        cls="flex flex-col items-center mt-10",
+    ), P(
+        "Kniffelblock online - kostenlos, ohne Registrierung",
+        cls="text-xl text-gray-300 mb-6",
+    )
 
 
 def Header():
@@ -148,27 +293,50 @@ def Header():
     """
 
     return Div(
-        Div(
-            Navbar(),
-            Hero(),
-            cls="container mx-auto"
-        ),
+        Div(Navbar(), Hero(), cls="container mx-auto"),
         cls="pb-32 text-center mb-8 w-full",
-        style=style
+        style=style,
     )
 
-def Banner(): return Div(cls="w-full flex items-center justify-center py-3 text-md text-gray-800 font-semibold bg-amber-400 border-b shadow border-amber-600")(Span(cls="mr-1")("🎲 Online-Kniffel.de gibt es bald auch als App."), A(href="#", onclick="plausible('More')", cls="text-blue-500 hover:opacity-70 transition-all")("Erfahre mehr →"))
+
+def Banner():
+    return Div(
+        cls="w-full flex items-center justify-center py-3 text-md text-gray-800 font-semibold bg-amber-400 border-b shadow border-amber-600"
+    )(
+        Span(cls="mr-1")("🎲 Online-Kniffel.de gibt es bald auch als App."),
+        A(
+            href="#",
+            onclick="plausible('More')",
+            cls="text-blue-500 hover:opacity-70 transition-all",
+        )("Erfahre mehr →"),
+    )
+
 
 def AddPlayerForm():
     return Form(
-            Div(
-                Input(type="text", name="username", placeholder="Spielername", cls="w-full text-lg border border-gray-300 rounded-l p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"),
-                Button("Hinzufügen", type="submit", onclick="plausible('Add')", cls="bg-blue-500 hover:bg-blue-600 text-lg text-white p-2 rounded-r transition duration-300 ease-in-out disabled:bg-gray-400 disabled:cursor-not-allowed"),
-                cls="flex"
+        Div(
+            Input(
+                type="text",
+                name="username",
+                placeholder="Spielername",
+                cls="w-full text-lg border border-gray-300 rounded-l p-2 focus:outline-none focus:ring-2 focus:ring-blue-500",
             ),
-            hx_post="/add-user", hx_target="#score-table-container", hx_swap="outerHTML", **{'hx-on::after-request': "this.reset()"}, hx_disabled_elt="find button",
-        cls="max-w-md mx-auto mb-6"
+            Button(
+                "Hinzufügen",
+                type="submit",
+                onclick="plausible('Add')",
+                cls="bg-blue-500 hover:bg-blue-600 text-lg text-white p-2 rounded-r transition duration-300 ease-in-out disabled:bg-gray-400 disabled:cursor-not-allowed",
+            ),
+            cls="flex",
+        ),
+        hx_post="/add-user",
+        hx_target="#score-table-container",
+        hx_swap="outerHTML",
+        **{"hx-on::after-request": "this.reset()"},
+        hx_disabled_elt="find button",
+        cls="max-w-md mx-auto mb-6",
     )
+
 
 def MyCard(*args, **kwargs):
     cls = f"bg-white p-6 rounded-lg shadow-md {kwargs.pop('cls', '')}"
@@ -182,34 +350,64 @@ def get(session):
     It contains the title, description, and a form to add players.
     """
 
-    #read in content.md with the content for the home page
-    with open('content.md', 'r', encoding='utf-8') as file:
+    # read in content.md with the content for the home page
+    with open("content.md", "r", encoding="utf-8") as file:
         md_content = file.read()
     content_html = mistletoe.markdown(md_content)
 
-    return Title('online-kniffel.de - Kniffelblock online'), Header(), Div(
+    return (
+        Title("online-kniffel.de - Kniffelblock online"),
+        Header(),
         Div(
-            MyCard(
-                H2("Spieler hinzufügen", cls="text-xl font-semibold mb-4 text-center"),
-                AddPlayerForm(),
-                Div(
-                    Div(id="score-table", cls="mt-4", hx_get="/score-table", hx_trigger="load"),
-                    id="score-table-container"
+            Div(
+                MyCard(
+                    H2(
+                        "Spieler hinzufügen",
+                        cls="text-xl font-semibold mb-4 text-center",
+                    ),
+                    AddPlayerForm(),
+                    Div(
+                        Div(
+                            id="score-table",
+                            cls="mt-4",
+                            hx_get="/score-table",
+                            hx_trigger="load",
+                        ),
+                        id="score-table-container",
+                    ),
                 ),
-            ),
-            MyCard(
-                Div(NotStr(content_html), cls="prose prose-lg prose-zinc max-w-3xl mx-auto"),
-                cls="mt-8"
-            ),
-            Footer(
-                P("Created by ", A("@rasmus1610", href="https://twitter.com/rasmus1610", target="_blank", cls="text-blue-500 hover:text-blue-700"),
-                  " | ", A("GitHub", href="https://github.com/vacmar01/kniffel", target="_blank", cls="text-blue-500 hover:text-blue-700"),
-                  cls="text-center text-gray-600"),
-                cls="py-12"
-            ),
-            cls="container mx-auto -mt-32"
-        )
+                MyCard(
+                    Div(
+                        NotStr(content_html),
+                        cls="prose prose-lg prose-zinc max-w-3xl mx-auto",
+                    ),
+                    cls="mt-8",
+                ),
+                Footer(
+                    P(
+                        "Created by ",
+                        A(
+                            "@rasmus1610",
+                            href="https://twitter.com/rasmus1610",
+                            target="_blank",
+                            cls="text-blue-500 hover:text-blue-700",
+                        ),
+                        " | ",
+                        A(
+                            "GitHub",
+                            href="https://github.com/vacmar01/kniffel",
+                            target="_blank",
+                            cls="text-blue-500 hover:text-blue-700",
+                        ),
+                        cls="text-center text-gray-600",
+                    ),
+                    cls="py-12",
+                ),
+                cls="container mx-auto -mt-32",
+            )
+        ),
     )
+
 
 @rt("/add-user")
 def post(session, username: str):
@@ -223,6 +421,7 @@ def post(session, username: str):
 
     add_toast(session, f"{username} wurde hinzugefügt", "success")
     return ScoreTableContainer(session)
+
 
 @rt("/delete-user/{username}")
 def post(session, username: str):
@@ -239,12 +438,14 @@ def post(session, username: str):
             session["scores"] = scores
     return ScoreTableContainer(session)
 
+
 @rt("/score-table")
 def get(session):
     """
     Get the score table container HTML element for the game.
     """
     return ScoreTableContainer(session)
+
 
 @rt("/update-score/{user}/{category}")
 def post(session, user: str, category: str, value: str):
@@ -267,6 +468,7 @@ def post(session, user: str, category: str, value: str):
     session["scores"] = scores
     return ScoreTableContainer(session)
 
+
 @rt("/reset-scores")
 def post(session):
     """
@@ -274,6 +476,7 @@ def post(session):
     """
     session["scores"] = {user: {} for user in session.get("users", [])}
     return ScoreTableContainer(session)
+
 
 import sys
 
