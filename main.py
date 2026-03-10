@@ -1,6 +1,118 @@
 from fasthtml.common import *
 import mistletoe
 from starlette.staticfiles import StaticFiles
+import sqlite3
+import json
+import hashlib
+from datetime import datetime, timedelta
+import os
+from pathlib import Path
+
+# Ensure data directory exists
+Path("data").mkdir(exist_ok=True)
+
+# Analytics database setup
+ANALYTICS_DB = "data/analytics.db"
+ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "kniffel-admin-123")
+
+
+def init_analytics_db():
+    """Initialize the analytics database with events table."""
+    conn = sqlite3.connect(ANALYTICS_DB)
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS events (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            session_hash TEXT NOT NULL,
+            event_type TEXT NOT NULL,
+            timestamp TEXT NOT NULL,
+            player_count INTEGER,
+            categories_filled INTEGER,
+            category TEXT,
+            value INTEGER,
+            metadata TEXT
+        )
+    """)
+    conn.execute("""
+        CREATE INDEX IF NOT EXISTS idx_session_hash ON events(session_hash)
+    """)
+    conn.execute("""
+        CREATE INDEX IF NOT EXISTS idx_timestamp ON events(timestamp)
+    """)
+    conn.execute("""
+        CREATE INDEX IF NOT EXISTS idx_event_type ON events(event_type)
+    """)
+    conn.commit()
+    conn.close()
+
+
+def cleanup_old_events():
+    """Remove events older than 28 days."""
+    conn = sqlite3.connect(ANALYTICS_DB)
+    cutoff = (datetime.now() - timedelta(days=28)).isoformat()
+    conn.execute("DELETE FROM events WHERE timestamp < ?", (cutoff,))
+    conn.commit()
+    conn.close()
+
+
+def get_session_hash(session):
+    """Generate an anonymized hash for the session."""
+    session_id = str(id(session))
+    return hashlib.sha256(session_id.encode()).hexdigest()[:8]
+
+
+def count_filled_categories(scores):
+    """Count total filled categories across all players."""
+    total = 0
+    for user_scores in scores.values():
+        total += sum(1 for v in user_scores.values() if v is not None)
+    return total
+
+
+def log_event(session, event_type, category=None, value=None, extra_metadata=None):
+    """Log an analytics event to the database."""
+    try:
+        # Cleanup old events periodically (1% chance)
+        import random
+
+        if random.random() < 0.01:
+            cleanup_old_events()
+
+        conn = sqlite3.connect(ANALYTICS_DB)
+        users = session.get("users", [])
+        scores = session.get("scores", {})
+
+        metadata = extra_metadata or {}
+        if category:
+            metadata["category"] = category
+        if value is not None:
+            metadata["value"] = value
+
+        conn.execute(
+            """
+            INSERT INTO events 
+            (session_hash, event_type, timestamp, player_count, categories_filled, category, value, metadata)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        """,
+            (
+                get_session_hash(session),
+                event_type,
+                datetime.now().isoformat(),
+                len(users),
+                count_filled_categories(scores),
+                category,
+                value,
+                json.dumps(metadata) if metadata else None,
+            ),
+        )
+        conn.commit()
+        conn.close()
+    except Exception:
+        # Silently fail - analytics should not break the app
+        pass
+
+
+# Initialize analytics on startup
+init_analytics_db()
 
 app, rt = fast_app(
     pico=False,
@@ -418,6 +530,7 @@ def post(session, username: str):
     if username and username not in users:
         users.append(username.strip())
         session["users"] = users
+        log_event(session, "player_added")
 
     add_toast(session, f"{username} wurde hinzugefügt", "success")
     return ScoreTableContainer(session)
@@ -436,6 +549,7 @@ def post(session, username: str):
         if username in scores:
             del scores[username]
             session["scores"] = scores
+        log_event(session, "player_removed")
     return ScoreTableContainer(session)
 
 
@@ -457,13 +571,24 @@ def post(session, user: str, category: str, value: str):
 
     if value == "":
         scores[user][category] = None
+        log_event(session, "score_cleared", category=category)
     elif category in fixed_scores:
         if value == "0":  # "Gestrichen"
             scores[user][category] = 0
+            log_event(session, "score_crossed_out", category=category, value=0)
         else:  # "Gewürfelt"
             scores[user][category] = fixed_scores[category]
+            log_event(
+                session,
+                "score_entered",
+                category=category,
+                value=fixed_scores[category],
+            )
     else:
-        scores[user][category] = int(float(value)) if value else None
+        int_value = int(float(value)) if value else None
+        scores[user][category] = int_value
+        if int_value is not None:
+            log_event(session, "score_entered", category=category, value=int_value)
 
     session["scores"] = scores
     return ScoreTableContainer(session)
@@ -475,7 +600,284 @@ def post(session):
     Reset the scores for all users.
     """
     session["scores"] = {user: {} for user in session.get("users", [])}
+    log_event(session, "scores_reset")
     return ScoreTableContainer(session)
+
+
+def get_analytics_summary():
+    """Get summary statistics from analytics database."""
+    try:
+        conn = sqlite3.connect(ANALYTICS_DB)
+        conn.row_factory = sqlite3.Row
+
+        # Total events
+        total_events = conn.execute("SELECT COUNT(*) as count FROM events").fetchone()[
+            "count"
+        ]
+
+        # Unique sessions
+        unique_sessions = conn.execute(
+            "SELECT COUNT(DISTINCT session_hash) as count FROM events"
+        ).fetchone()["count"]
+
+        # Events by type
+        events_by_type = conn.execute("""
+            SELECT event_type, COUNT(*) as count 
+            FROM events 
+            GROUP BY event_type 
+            ORDER BY count DESC
+        """).fetchall()
+
+        # Recent sessions (last 24h)
+        recent_cutoff = (datetime.now() - timedelta(hours=24)).isoformat()
+        recent_sessions = conn.execute(
+            """
+            SELECT COUNT(DISTINCT session_hash) as count 
+            FROM events 
+            WHERE timestamp > ?
+        """,
+            (recent_cutoff,),
+        ).fetchone()["count"]
+
+        # Player count distribution
+        player_distribution = conn.execute("""
+            SELECT player_count, COUNT(*) as count 
+            FROM events 
+            WHERE event_type = 'player_added'
+            GROUP BY player_count 
+            ORDER BY player_count
+        """).fetchall()
+
+        # Category popularity
+        category_stats = conn.execute("""
+            SELECT category, COUNT(*) as count,
+                   SUM(CASE WHEN event_type = 'score_crossed_out' THEN 1 ELSE 0 END) as crossed_out
+            FROM events 
+            WHERE category IS NOT NULL
+            GROUP BY category
+            ORDER BY count DESC
+        """).fetchall()
+
+        # Session completion stats
+        session_stats = conn.execute("""
+            SELECT 
+                AVG(categories_filled) as avg_categories,
+                MAX(categories_filled) as max_categories,
+                COUNT(CASE WHEN categories_filled >= 13 THEN 1 END) as completed_sessions
+            FROM (
+                SELECT session_hash, MAX(categories_filled) as categories_filled
+                FROM events
+                GROUP BY session_hash
+            )
+        """).fetchone()
+
+        conn.close()
+
+        return {
+            "total_events": total_events,
+            "unique_sessions": unique_sessions,
+            "recent_sessions_24h": recent_sessions,
+            "events_by_type": [(r["event_type"], r["count"]) for r in events_by_type],
+            "player_distribution": [
+                (r["player_count"], r["count"]) for r in player_distribution
+            ],
+            "category_stats": [
+                (r["category"], r["count"], r["crossed_out"]) for r in category_stats
+            ],
+            "avg_categories": round(session_stats["avg_categories"] or 0, 1),
+            "max_categories": session_stats["max_categories"] or 0,
+            "completed_sessions": session_stats["completed_sessions"] or 0,
+        }
+    except Exception as e:
+        return {"error": str(e)}
+
+
+@rt("/admin/login")
+def get():
+    """Admin login page."""
+    return (
+        Title("Admin Login - Kniffel Analytics"),
+        Div(
+            H1("Admin Login", cls="text-2xl font-bold mb-4"),
+            Form(
+                Input(
+                    type="password",
+                    name="password",
+                    placeholder="Password",
+                    cls="border p-2 mb-2 w-full",
+                ),
+                Button(
+                    "Login", type="submit", cls="bg-blue-500 text-white p-2 rounded"
+                ),
+                action="/admin/login",
+                method="post",
+            ),
+            cls="max-w-md mx-auto mt-20 p-6",
+        ),
+    )
+
+
+@rt("/admin/login")
+def post(password: str):
+    """Handle admin login."""
+    if password == ADMIN_PASSWORD:
+        # Set a simple session flag for admin
+        return Redirect("/admin/dashboard")
+    return Redirect("/admin/login")
+
+
+@rt("/admin/dashboard")
+def get():
+    """Analytics dashboard."""
+    stats = get_analytics_summary()
+
+    if "error" in stats:
+        return (
+            Title("Analytics Dashboard"),
+            Div(
+                H1("Error loading analytics", cls="text-2xl font-bold text-red-600"),
+                P(stats["error"]),
+                cls="p-6",
+            ),
+        )
+
+    # Build event type breakdown
+    event_type_rows = [
+        Tr(Td(event_type), Td(str(count), cls="text-right"))
+        for event_type, count in stats["events_by_type"]
+    ]
+
+    # Build player distribution
+    player_dist_rows = [
+        Tr(
+            Td(f"{count} Player{'s' if count != 1 else ''}"),
+            Td(str(occurrences), cls="text-right"),
+        )
+        for count, occurrences in stats["player_distribution"]
+    ]
+
+    # Build category stats
+    category_rows = [
+        Tr(
+            Td(category),
+            Td(str(total), cls="text-right"),
+            Td(str(crossed_out), cls="text-right"),
+            Td(
+                f"{round((int(crossed_out) / int(total)) * 100, 1)}%"
+                if int(total) > 0
+                else "0%",
+                cls="text-right",
+            ),
+        )
+        for category, total, crossed_out in stats["category_stats"]
+    ]
+
+    return (
+        Title("Analytics Dashboard - Kniffel"),
+        Div(
+            H1("📊 Kniffel Analytics Dashboard", cls="text-3xl font-bold mb-6"),
+            # Summary Cards
+            Div(
+                Div(
+                    H2("Total Events", cls="text-gray-600 text-sm"),
+                    P(str(stats["total_events"]), cls="text-3xl font-bold"),
+                    cls="bg-white p-4 rounded shadow",
+                ),
+                Div(
+                    H2("Unique Sessions", cls="text-gray-600 text-sm"),
+                    P(str(stats["unique_sessions"]), cls="text-3xl font-bold"),
+                    cls="bg-white p-4 rounded shadow",
+                ),
+                Div(
+                    H2("Sessions (24h)", cls="text-gray-600 text-sm"),
+                    P(str(stats["recent_sessions_24h"]), cls="text-3xl font-bold"),
+                    cls="bg-white p-4 rounded shadow",
+                ),
+                Div(
+                    H2("Completed Games", cls="text-gray-600 text-sm"),
+                    P(str(stats["completed_sessions"]), cls="text-3xl font-bold"),
+                    cls="bg-white p-4 rounded shadow",
+                ),
+                cls="grid grid-cols-4 gap-4 mb-8",
+            ),
+            # Completion Stats
+            Div(
+                H2("Game Completion", cls="text-xl font-bold mb-4"),
+                P(f"Average categories filled per session: {stats['avg_categories']}"),
+                P(f"Most categories filled in a session: {stats['max_categories']}"),
+                cls="bg-white p-4 rounded shadow mb-8",
+            ),
+            # Two column layout
+            Div(
+                # Event Types
+                Div(
+                    H2("Events by Type", cls="text-xl font-bold mb-4"),
+                    Table(
+                        Thead(Tr(Th("Event"), Th("Count", cls="text-right"))),
+                        Tbody(*event_type_rows),
+                        cls="w-full",
+                    ),
+                    cls="bg-white p-4 rounded shadow",
+                ),
+                # Player Distribution
+                Div(
+                    H2("Player Count Distribution", cls="text-xl font-bold mb-4"),
+                    Table(
+                        Thead(Tr(Th("Players"), Th("Occurrences", cls="text-right"))),
+                        Tbody(*player_dist_rows),
+                        cls="w-full",
+                    ),
+                    cls="bg-white p-4 rounded shadow",
+                ),
+                cls="grid grid-cols-2 gap-4 mb-8",
+            ),
+            # Category Stats
+            Div(
+                H2("Category Usage", cls="text-xl font-bold mb-4"),
+                Table(
+                    Thead(
+                        Tr(
+                            Th("Category"),
+                            Th("Total Uses", cls="text-right"),
+                            Th("Crossed Out", cls="text-right"),
+                            Th("Crossed Out %", cls="text-right"),
+                        )
+                    ),
+                    Tbody(*category_rows),
+                    cls="w-full",
+                ),
+                cls="bg-white p-4 rounded shadow mb-8",
+            ),
+            # Download button
+            Div(
+                A(
+                    "Download Database",
+                    href="/admin/download",
+                    cls="bg-green-500 hover:bg-green-600 text-white p-3 rounded inline-block",
+                ),
+                cls="mt-8",
+            ),
+            cls="container mx-auto p-6 bg-gray-50 min-h-screen",
+        ),
+    )
+
+
+@rt("/admin/download")
+def get():
+    """Download the analytics database."""
+    if not os.path.exists(ANALYTICS_DB):
+        return Response("Database not found", status_code=404)
+
+    with open(ANALYTICS_DB, "rb") as f:
+        content = f.read()
+
+    return Response(
+        content,
+        media_type="application/octet-stream",
+        headers={
+            "Content-Disposition": f"attachment; filename=kniffel_analytics_{datetime.now().strftime('%Y%m%d')}.db"
+        },
+    )
 
 
 import sys
