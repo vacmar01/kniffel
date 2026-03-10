@@ -1,6 +1,7 @@
-venv/
-__pycache__/
-.sesskey
+data/
 .DS_Store
 node_modules/
-data/
+__pycache__/
+.sesskey
+static/
+venv/
