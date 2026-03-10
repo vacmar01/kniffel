@@ -10,8 +10,12 @@ COPY vite.config.mjs ./
 # Install dependencies (skip postinstall since we'll build manually)
 RUN npm ci --ignore-scripts
 
-# Copy assets and build
+# Copy assets AND the Python files Tailwind needs to scan for classes
 COPY assets/ ./assets/
+COPY main.py ./
+COPY content.md ./
+
+# Build assets (Tailwind scans main.py for classes)
 RUN npm run build
 
 # Production stage
