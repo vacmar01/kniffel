@@ -119,3 +119,5 @@ requirements.txt     # Python dependencies
 - Test data does not interfere with manual testing
 - Always check TESTING.md before modifying tests
 - Use `uv` exclusively for Python operations
+- The dev server is usually already started by the user. Always check whether the user has already started a dev server on port 5001 before starting it yourself
+- The analytics database can be found in the data/ folder

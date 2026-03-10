@@ -6,6 +6,7 @@ import json
 import hashlib
 from datetime import datetime, timedelta
 import os
+import uuid
 from pathlib import Path
 
 # Ensure data directory exists
@@ -56,8 +57,9 @@ def cleanup_old_events():
 
 def get_session_hash(session):
     """Generate an anonymized hash for the session."""
-    session_id = str(id(session))
-    return hashlib.sha256(session_id.encode()).hexdigest()[:8]
+    if "session_id" not in session:
+        session["session_id"] = str(uuid.uuid4())
+    return hashlib.sha256(session["session_id"].encode()).hexdigest()[:8]
 
 
 def count_filled_categories(scores):
@@ -717,18 +719,29 @@ def get():
     )
 
 
+def require_admin(session):
+    """Check if user is authenticated as admin."""
+    if not session.get("is_admin"):
+        return Redirect("/admin/login")
+    return None
+
+
 @rt("/admin/login")
-def post(password: str):
+def post(session, password: str):
     """Handle admin login."""
     if password == ADMIN_PASSWORD:
-        # Set a simple session flag for admin
+        session["is_admin"] = True
         return Redirect("/admin/dashboard")
     return Redirect("/admin/login")
 
 
 @rt("/admin/dashboard")
-def get():
+def get(session):
     """Analytics dashboard."""
+    auth_check = require_admin(session)
+    if auth_check:
+        return auth_check
+    
     stats = get_analytics_summary()
 
     if "error" in stats:
@@ -855,6 +868,17 @@ def get():
                     href="/admin/download",
                     cls="bg-green-500 hover:bg-green-600 text-white p-3 rounded inline-block",
                 ),
+                Form(
+                    Button(
+                        "Reset Analytics",
+                        type="submit",
+                        onclick="return confirm('Are you sure you want to reset all analytics data? This cannot be undone.');",
+                        cls="bg-red-500 hover:bg-red-600 text-white p-3 rounded ml-2",
+                    ),
+                    action="/admin/reset",
+                    method="post",
+                    cls="inline",
+                ),
                 cls="mt-8",
             ),
             cls="container mx-auto p-6 bg-gray-50 min-h-screen",
@@ -863,8 +887,12 @@ def get():
 
 
 @rt("/admin/download")
-def get():
+def get(session):
     """Download the analytics database."""
+    auth_check = require_admin(session)
+    if auth_check:
+        return auth_check
+    
     if not os.path.exists(ANALYTICS_DB):
         return Response("Database not found", status_code=404)
 
@@ -878,6 +906,24 @@ def get():
             "Content-Disposition": f"attachment; filename=kniffel_analytics_{datetime.now().strftime('%Y%m%d')}.db"
         },
     )
+
+
+@rt("/admin/reset")
+def post(session):
+    """Reset the analytics database."""
+    auth_check = require_admin(session)
+    if auth_check:
+        return auth_check
+    
+    try:
+        conn = sqlite3.connect(ANALYTICS_DB)
+        conn.execute("DELETE FROM events")
+        conn.commit()
+        conn.close()
+    except Exception:
+        pass
+    
+    return Redirect("/admin/dashboard")
 
 
 import sys
