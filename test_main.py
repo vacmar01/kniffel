@@ -1,6 +1,13 @@
 import pytest
+import uuid
 from starlette.testclient import TestClient
-from main import app, calculate_scores, categories, fixed_scores, upper_section
+from main import (
+    app,
+    calculate_scores,
+    categories,
+    fixed_scores,
+    upper_section,
+)
 
 client = TestClient(app)
 

@@ -35,6 +35,7 @@ The project has comprehensive testing documented in **TESTING.md**. Always refer
 - How to run unit tests (14 tests in `test_main.py`)
 - How to run browser tests (7 tests in `test_playwright.py`)
 - Test isolation (browser tests use port 5002)
+- prefer dependency injection over mocking. Refactor if you must. 
 - Debugging tips
 
 Quick reference:

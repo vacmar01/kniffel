@@ -641,13 +641,17 @@ def get_analytics_summary():
             (recent_cutoff,),
         ).fetchone()["count"]
 
-        # Player count distribution
+        # Player count distribution (count sessions by max players, not every event)
         player_distribution = conn.execute("""
-            SELECT player_count, COUNT(*) as count 
-            FROM events 
-            WHERE event_type = 'player_added'
-            GROUP BY player_count 
-            ORDER BY player_count
+            SELECT max_player_count, COUNT(*) as count
+            FROM (
+                SELECT session_hash, MAX(player_count) as max_player_count
+                FROM events
+                WHERE event_type = 'player_added'
+                GROUP BY session_hash
+            )
+            GROUP BY max_player_count
+            ORDER BY max_player_count
         """).fetchall()
 
         # Category popularity
@@ -681,7 +685,7 @@ def get_analytics_summary():
             "recent_sessions_24h": recent_sessions,
             "events_by_type": [(r["event_type"], r["count"]) for r in events_by_type],
             "player_distribution": [
-                (r["player_count"], r["count"]) for r in player_distribution
+                (r["max_player_count"], r["count"]) for r in player_distribution
             ],
             "category_stats": [
                 (r["category"], r["count"], r["crossed_out"]) for r in category_stats
