@@ -13,9 +13,15 @@ RUN npm ci --ignore-scripts
 # Copy assets AND the Python files Tailwind needs to scan for classes
 COPY assets/ ./assets/
 COPY main.py ./
+COPY app.py ./
+COPY config.py ./
+COPY models.py ./
 COPY content.md ./
+COPY routes/ ./routes/
+COPY services/ ./services/
+COPY components/ ./components/
 
-# Build assets (Tailwind scans main.py for classes)
+# Build assets (Tailwind scans all Python files for classes)
 RUN npm run build
 
 # Production stage
