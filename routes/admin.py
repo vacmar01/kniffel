@@ -134,6 +134,12 @@ def get(session):
                 Div(
                     H2("Completed Games", cls="text-gray-600 text-sm"),
                     P(format_number(stats["completed_sessions"]), cls="text-3xl font-bold"),
+                    P(
+                        f"{round((stats['completed_sessions'] / stats['unique_sessions']) * 100, 1)}% of all games"
+                        if stats["unique_sessions"] > 0
+                        else "0% of all games",
+                        cls="text-sm text-gray-500 mt-1",
+                    ),
                     cls="bg-white p-4 rounded shadow",
                 ),
                 cls="grid grid-cols-4 gap-4 mb-8",
