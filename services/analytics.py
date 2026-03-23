@@ -173,6 +173,11 @@ def get_analytics_summary():
             )
         """).fetchone()
 
+        # Earliest event timestamp
+        earliest_event = conn.execute(
+            "SELECT MIN(timestamp) as timestamp FROM events"
+        ).fetchone()
+
         conn.close()
 
         return {
@@ -189,6 +194,7 @@ def get_analytics_summary():
             "avg_categories": round(session_stats["avg_categories"] or 0, 1),
             "max_categories": session_stats["max_categories"] or 0,
             "completed_sessions": session_stats["completed_sessions"] or 0,
+            "earliest_event": earliest_event["timestamp"] if earliest_event else None,
         }
     except Exception as e:
         return {"error": str(e)}

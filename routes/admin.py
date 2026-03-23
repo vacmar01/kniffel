@@ -124,6 +124,12 @@ def get(session):
                 Div(
                     H2("Unique Sessions", cls="text-gray-600 text-sm"),
                     P(format_number(stats["unique_sessions"]), cls="text-3xl font-bold"),
+                    P(
+                        f"since {datetime.fromisoformat(stats['earliest_event']).strftime('%d.%m.%Y')}"
+                        if stats.get("earliest_event")
+                        else "",
+                        cls="text-sm text-gray-500 mt-1",
+                    ),
                     cls="bg-white p-4 rounded shadow",
                 ),
                 Div(
