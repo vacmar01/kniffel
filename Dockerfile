@@ -31,7 +31,13 @@ RUN uv pip install --system -r requirements.txt
 
 # Copy application code
 COPY main.py .
+COPY app.py .
+COPY config.py .
+COPY models.py .
 COPY content.md .
+COPY routes/ ./routes/
+COPY services/ ./services/
+COPY components/ ./components/
 
 # Copy built static files from builder
 COPY --from=builder /app/static/ ./static/
