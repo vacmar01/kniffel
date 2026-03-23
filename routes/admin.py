@@ -7,6 +7,18 @@ from config import ADMIN_PASSWORD, ANALYTICS_DB
 from services.analytics import get_analytics_summary, reset_analytics
 
 
+def format_number(n):
+    """Format number with K/M suffix for large values."""
+    if n is None:
+        return "0"
+    n = int(n)
+    if n >= 1_000_000:
+        return f"{n / 1_000_000:.1f}M"
+    elif n >= 1000:
+        return f"{n / 1000:.1f}k"
+    return str(n)
+
+
 def require_admin(session):
     """Check if user is authenticated as admin."""
     if not session.get("is_admin"):
@@ -106,22 +118,22 @@ def get(session):
             Div(
                 Div(
                     H2("Total Events", cls="text-gray-600 text-sm"),
-                    P(str(stats["total_events"]), cls="text-3xl font-bold"),
+                    P(format_number(stats["total_events"]), cls="text-3xl font-bold"),
                     cls="bg-white p-4 rounded shadow",
                 ),
                 Div(
                     H2("Unique Sessions", cls="text-gray-600 text-sm"),
-                    P(str(stats["unique_sessions"]), cls="text-3xl font-bold"),
+                    P(format_number(stats["unique_sessions"]), cls="text-3xl font-bold"),
                     cls="bg-white p-4 rounded shadow",
                 ),
                 Div(
                     H2("Sessions (24h)", cls="text-gray-600 text-sm"),
-                    P(str(stats["recent_sessions_24h"]), cls="text-3xl font-bold"),
+                    P(format_number(stats["recent_sessions_24h"]), cls="text-3xl font-bold"),
                     cls="bg-white p-4 rounded shadow",
                 ),
                 Div(
                     H2("Completed Games", cls="text-gray-600 text-sm"),
-                    P(str(stats["completed_sessions"]), cls="text-3xl font-bold"),
+                    P(format_number(stats["completed_sessions"]), cls="text-3xl font-bold"),
                     cls="bg-white p-4 rounded shadow",
                 ),
                 cls="grid grid-cols-4 gap-4 mb-8",
