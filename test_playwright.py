@@ -80,6 +80,37 @@ class TestKniffelBrowser:
         expect(page.locator("input[placeholder='Spielername']")).to_be_visible()
         expect(page.locator("button", has_text="Hinzufügen")).to_be_visible()
     
+    def test_preview_without_javascript(self, browser, base_url: str):
+        """Visitors and crawlers receive useful scorecard HTML immediately."""
+        context = browser.new_context(java_script_enabled=False)
+        try:
+            page = context.new_page()
+            page.goto(base_url)
+            expect(page.locator("h1")).to_have_count(1)
+            expect(page.locator("#scorecard-preview")).to_be_visible()
+            expect(page.get_by_text("Beispielpunkte", exact=True)).to_be_visible()
+        finally:
+            context.close()
+
+    def test_mobile_scorecard_and_reload(self, page: Page, base_url: str):
+        page.set_viewport_size({"width": 390, "height": 844})
+        page.goto(base_url)
+        expect(page.locator("#scorecard-preview")).to_be_visible()
+        for name in ["Anna", "Ben", "Clara", "David", "Eva"]:
+            page.get_by_label("Spielername", exact=True).fill(name)
+            page.get_by_role("button", name="Hinzufügen", exact=True).click()
+            expect(page.get_by_role("columnheader", name=name + " ×")).to_be_visible()
+        expect(page.locator("#scorecard-preview")).to_have_count(0)
+        assert page.evaluate(
+            "document.documentElement.scrollWidth <= window.innerWidth"
+        )
+        page.get_by_label("Punkte für Anna: Einser", exact=True).fill("3")
+        page.get_by_label("Punkte für Anna: Einser", exact=True).blur()
+        expect(page.locator("tr:has-text('Gesamtsumme') td").nth(1)).to_have_text("3")
+        page.reload()
+        expect(page.get_by_label("Punkte für Anna: Einser", exact=True)).to_have_value("3")
+        expect(page.locator("#score-table-container")).to_have_count(1)
+
     def test_add_player(self, page: Page, base_url: str):
         """Test adding a player via HTMX"""
         page.goto(base_url)

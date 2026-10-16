@@ -10,6 +10,7 @@ def ScoreInput(user, category, value):
     """
     common_attrs = {
         "name": "value",
+        "aria_label": f"Punkte für {user}: {category}",
         "hx_post": f"/update-score/{user}/{category}",
         "hx_target": "#score-table-container",
         "hx_swap": "outerHTML",
@@ -35,21 +36,71 @@ def ScoreInput(user, category, value):
     )
 
 
+def ScorecardPreview():
+    """A read-only example, never added to the session or analytics."""
+    example_scores = {
+        "Einser": 3, "Zweier": 6, "Dreier": 9, "Vierer": 12,
+        "Fünfer": 15, "Sechser": 18, "Dreierpasch": 22,
+        "Viererpasch": 24, "Full House": 25, "Kleine Straße": 30,
+        "Große Straße": 40, "Kniffel": 0, "Chance": 23,
+    }
+    upper_total, bonus, total = calculate_scores(example_scores)
+    cell_cls = "border border-gray-200 px-3 py-1 text-sm"
+    return Div(
+        H3("So sieht dein Kniffelblock aus", cls="text-lg font-semibold mb-2"),
+        P(
+            "Dies ist nur ein Beispiel. Füge oben den ersten Spieler hinzu, "
+            "um einen leeren Block zu starten.",
+            cls="text-gray-600 mb-4",
+        ),
+        Table(
+            Caption(
+                "Beispielrunde mit erfundenen Punkten – kein echter Spielstand",
+                cls="text-sm text-gray-600 mb-2 text-left",
+            ),
+            Thead(
+                Tr(
+                    Th("Kategorie", scope="col", cls=cell_cls + " text-left"),
+                    Th("Beispielpunkte", scope="col", cls=cell_cls + " text-right"),
+                )
+            ),
+            Tbody(
+                *[
+                    Tr(
+                        Th(category, scope="row", cls=cell_cls + " text-left font-normal"),
+                        Td(str(example_scores[category]), cls=cell_cls + " text-right"),
+                    )
+                    for category in categories
+                ],
+            ),
+            Tfoot(
+                *[
+                    Tr(
+                        Th(label, scope="row", cls=cell_cls + " text-left"),
+                        Td(str(value), cls=cell_cls + " text-right font-bold"),
+                    )
+                    for label, value in [
+                        ("Oberer Teil Summe", upper_total),
+                        ("Bonus (bei 63 oder mehr)", bonus),
+                        ("Gesamtsumme", total),
+                    ]
+                ]
+            ),
+            cls="w-full border-collapse bg-white",
+            id="scorecard-preview",
+        ),
+        cls="max-w-xl mx-auto",
+        id="score-table",
+    )
+
+
 def ScoreTable(session):
     """
     Get the score table HTML element for the game.
     """
     users, scores = session.get("users", []), session.get("scores", {})
     if not users:
-        return Div(
-            Div("🎲", cls="text-6xl mb-4"),
-            Div("Noch keine Spieler", cls="text-lg font-semibold text-gray-700 mb-2"),
-            Div(
-                "Füge oben Spieler hinzu, um das Spiel zu beginnen", cls="text-gray-500"
-            ),
-            cls="flex flex-col items-center justify-center py-16 text-center",
-            id="score-table",
-        )
+        return ScorecardPreview()
 
     def get_missing_categories(user_scores):
         """
@@ -177,16 +228,18 @@ def ScoreTableContainer(session):
         )
         if has_players
         else None,
-        cls="bg-white rounded-lg p-6",
+        cls="bg-white rounded-lg mt-4",
         id="score-table-container",
     )
 
 
 def AddPlayerForm():
     return Form(
+        Label("Spielername", fr="player-name", cls="sr-only"),
         Div(
             Input(
                 type="text",
+                id="player-name",
                 name="username",
                 placeholder="Spielername",
                 cls="w-full text-lg border border-gray-300 rounded-l p-2 focus:outline-none focus:ring-2 focus:ring-blue-500",

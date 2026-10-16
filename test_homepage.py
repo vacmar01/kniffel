@@ -1,6 +1,8 @@
 """Homepage content and crawlable HTML contracts."""
 from html.parser import HTMLParser
 
+from models import categories
+
 
 class Document(HTMLParser):
     def __init__(self, html):
@@ -40,3 +42,46 @@ def test_homepage_explains_real_dice_and_browser_storage(client):
     assert "Eine synchronisierte Partie auf mehreren Geräten gibt es nicht" in html
     assert "63 Punkte" in html
     assert "35 Bonuspunkte" in html
+
+
+def test_example_scorecard_is_server_rendered_and_read_only(client):
+    html = client.get("/").text
+    document = Document(html)
+    assert len(document.find("table", id="scorecard-preview")) == 1
+    assert len(document.find("div", id="score-table-container")) == 1
+    assert len(document.find("div", id="score-table")) == 1
+    assert "Beispielrunde mit erfundenen Punkten" in html
+    assert all(category in html for category in categories)
+    assert not document.find("input", type="number")
+    assert not document.find("select")
+    assert 'hx-get="/score-table"' not in html
+
+
+def test_example_never_becomes_a_player_or_a_score(client):
+    client.get("/")
+    html = client.post("/add-user", data={"username": "Alice"}).text
+    document = Document(html)
+    assert not document.find("table", id="scorecard-preview")
+    assert len(document.find("input", type="number")) == 9
+    assert all(not field.get("value") for field in document.find("input", type="number"))
+    assert len(document.find("select")) == 4
+    assert "Beispielpunkte" not in html
+
+
+def test_existing_scorecard_is_server_rendered_after_reload(client):
+    client.post("/add-user", data={"username": "Alice"})
+    client.post("/update-score/Alice/Einser", data={"value": "3"})
+    html = client.get("/").text
+    document = Document(html)
+    assert not document.find("table", id="scorecard-preview")
+    assert len(document.find("table", id="score-table")) == 1
+    assert len(document.find("div", id="score-table-container")) == 1
+    assert document.find("input", type="number", value="3")
+    assert document.find("input", **{"aria-label": "Punkte für Alice: Einser"})
+
+
+def test_removing_last_player_returns_preview(client):
+    client.post("/add-user", data={"username": "Alice"})
+    html = client.post("/delete-user/Alice").text
+    assert Document(html).find("table", id="scorecard-preview")
+    assert "Punktestand zurücksetzen" not in html

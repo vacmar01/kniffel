@@ -34,15 +34,7 @@ def get(session):
                         cls="text-center text-gray-600 max-w-2xl mx-auto mb-4",
                     ),
                     AddPlayerForm(),
-                    Div(
-                        Div(
-                            id="score-table",
-                            cls="mt-4",
-                            hx_get="/score-table",
-                            hx_trigger="load",
-                        ),
-                        id="score-table-container",
-                    ),
+                    ScoreTableContainer(session),
                 ),
                 MyCard(
                     Div(
