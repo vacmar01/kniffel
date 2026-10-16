@@ -4,6 +4,7 @@ from fasthtml.common import *
 from app import rt
 from components.layout import Header, MyCard
 from components.game import AddPlayerForm, ScoreTableContainer
+from components.seo import HomepageMetadata
 
 
 @rt("/")
@@ -19,7 +20,7 @@ def get(session):
     content_html = mistletoe.markdown(md_content)
 
     return (
-        Title("Kniffelblock online – kostenlos Punkte eintragen | online-kniffel.de"),
+        *HomepageMetadata(),
         Header(),
         Div(
             Div(

@@ -1,6 +1,12 @@
 """Homepage content and crawlable HTML contracts."""
 from html.parser import HTMLParser
+import json
+import re
+from xml.etree import ElementTree
 
+import pytest
+
+from config import SITE_URL
 from models import categories
 
 
@@ -85,3 +91,73 @@ def test_removing_last_player_returns_preview(client):
     html = client.post("/delete-user/Alice").text
     assert Document(html).find("table", id="scorecard-preview")
     assert "Punktestand zurücksetzen" not in html
+
+
+def test_public_metadata_uses_one_fixed_canonical_url(client):
+    html = client.get("/", headers={"host": "alternate.example"}).text
+    document = Document(html)
+    assert document.find("html", lang="de")
+    assert document.find("link", rel="canonical") == [
+        {"rel": "canonical", "href": f"{SITE_URL}/"}
+    ]
+    assert document.find("meta", property="og:url")[0]["content"] == f"{SITE_URL}/"
+    assert document.find("meta", property="og:locale")[0]["content"] == "de_DE"
+    assert document.find("meta", name="twitter:card")[0]["content"] == "summary"
+    assert "alternate.example" not in html
+    assert "noindex" not in client.get("/").headers.get("x-robots-tag", "")
+
+
+def test_structured_data_describes_the_free_tool_not_the_players(client):
+    client.post("/add-user", data={"username": "PrivatePlayer"})
+    html = client.get("/").text
+    scripts = re.findall(
+        r'<script[^>]*type="application/ld\+json"[^>]*>(.*?)</script>', html, re.S
+    )
+    assert len(scripts) == 1
+    data = json.loads(scripts[0])
+    assert data["@type"] == "WebApplication"
+    assert data["url"] == f"{SITE_URL}/"
+    assert data["inLanguage"] == "de"
+    assert data["offers"]["price"] == "0"
+    assert "PrivatePlayer" not in scripts[0]
+    assert "aggregateRating" not in data
+
+
+def test_robots_advertises_production_sitemap(client):
+    response = client.get("/robots.txt")
+    assert response.status_code == 200
+    assert response.headers["content-type"].startswith("text/plain")
+    assert "User-agent: *\nAllow: /" in response.text
+    assert f"Sitemap: {SITE_URL}/sitemap.xml" in response.text
+
+
+def test_sitemap_lists_only_the_canonical_homepage(client):
+    response = client.get("/sitemap.xml", headers={"host": "alternate.example"})
+    assert response.status_code == 200
+    assert response.headers["content-type"].startswith("application/xml")
+    root = ElementTree.fromstring(response.text)
+    namespace = {"s": "http://www.sitemaps.org/schemas/sitemap/0.9"}
+    assert [node.text for node in root.findall("s:url/s:loc", namespace)] == [
+        f"{SITE_URL}/"
+    ]
+    assert not root.findall("s:url/s:lastmod", namespace)
+
+
+@pytest.mark.parametrize(
+    "path", ["/score-table", "/admin/login", "/admin/dashboard", "/admin/download"]
+)
+def test_utility_pages_are_not_indexable(client, path):
+    response = client.get(path, follow_redirects=False)
+    assert response.headers["x-robots-tag"] == "noindex"
+    assert not Document(response.text).find("link", rel="canonical")
+
+
+@pytest.mark.parametrize("path", ["/content.md", "/requirements.txt", "/package.json"])
+def test_project_files_are_not_public_static_content(client, path):
+    assert client.get(path).status_code == 404
+
+
+def test_explicit_static_mount_still_serves_styles(client):
+    response = client.get("/static/bundle.css")
+    assert response.status_code == 200
+    assert response.headers["content-type"].startswith("text/css")
