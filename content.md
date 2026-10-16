@@ -1,55 +1,56 @@
-# Kniffelblock online
+## Dein digitaler Kniffelblock für echte Würfel
 
-Auf online-kniffel.de kannst du Kniffel online spielen. Spiele mit echten Würfeln und nutze die Website um den Überblick über die Punkte zu behalten. Du kannst so viele Spieler wie du möchtest hinzufügen. Die Punkte werden automatisch berechnet.
+Mit online-kniffel.de ersetzt du den Papierblock beim Kniffeln. Ihr würfelt am Tisch und tragt die Ergebnisse hier ein – der Block berechnet Summen, Bonus und Gesamtpunktzahl. Er funktioniert direkt im Browser auf dem Smartphone, Tablet oder Computer, kostenlos und ohne Anmeldung.
 
-## Was ist Kniffel?
+### So füllst du den Kniffelblock online aus
 
-Kniffel ist ein beliebtes Würfelspiel, das auch unter dem Namen Yahtzee bekannt ist. Es wurde in den 1950er Jahren erfunden und hat seitdem Millionen von Spielern weltweit begeistert. Das Spiel kombiniert Glück und Strategie und eignet sich hervorragend für Spieleabende mit Familie und Freunden.
+1. **Spieler hinzufügen:** Trage die Namen eurer Mitspieler einzeln ein. Jede Person erhält eine eigene Spalte im gemeinsamen Block.
+2. **Mit fünf echten Würfeln spielen:** Pro Zug habt ihr bis zu drei Würfe. Nach den ersten beiden Würfen dürft ihr Würfel behalten und die übrigen erneut werfen.
+3. **Punkte eintragen:** Wähle eine freie Kategorie. Bei Einsern bis Sechsern, Pasch und Chance gibst du die Punktzahl ein. Bei Full House, Straßen und Kniffel wählst du „Gewürfelt“ oder „Gestrichen“.
+4. **Ergebnis ablesen:** Der Block addiert die Punkte und berücksichtigt den Bonus automatisch. Sind bei allen Spielern die 13 Kategorien gefüllt, gewinnt die höchste Gesamtpunktzahl.
 
-## Spielmaterial
+Ihr könnt den digitalen Kniffelblock gemeinsam auf einem Gerät führen. Er ist ein Punktezettel für eure Würfelrunde, kein Computerspiel mit virtuellen Würfeln oder Online-Gegnern.
 
-- 5 Würfel
-- Diese Website
+## Punkte und Bonus beim Kniffeln
 
-## Spielablauf
+### Oberer Teil: Einser bis Sechser
 
-### Grundprinzip
+Hier zählt nur die Summe der Würfel mit der passenden Augenzahl. Drei Vierer ergeben zum Beispiel **12 Punkte** in der Kategorie Vierer. Insgesamt gibt es sechs Kategorien, eine für jede Augenzahl.
 
-Jeder Spieler hat pro Runde bis zu drei Würfe. Ziel ist es, bestimmte Kombinationen zu würfeln und möglichst viele Punkte zu sammeln.
+Erreichst du im oberen Teil **mindestens 63 Punkte**, erhältst du **35 Bonuspunkte**. Jeweils drei passende Würfel in jeder der sechs Kategorien ergeben genau 63 Punkte. Weniger Punkte in einer Kategorie kannst du durch mehr Punkte in einer anderen ausgleichen.
 
-### Spielzug
+### Unterer Teil: Kombinationen und Chance
 
-1. Der Spieler würfelt mit allen fünf Würfeln.
-2. Nach dem ersten und zweiten Wurf kann der Spieler beliebig viele Würfel beiseitelegen und mit den übrigen erneut würfeln.
-3. Nach spätestens dem dritten Wurf muss der Spieler das Ergebnis in eine freie Kategorie auf seinem Spielzettel eintragen.
+| Kategorie | Was zählt? | Punkte |
+| --- | --- | --- |
+| Dreierpasch | Mindestens drei gleiche Augenzahlen | Summe aller fünf Würfel |
+| Viererpasch | Mindestens vier gleiche Augenzahlen | Summe aller fünf Würfel |
+| Full House | Drei gleiche und zwei andere gleiche Augenzahlen | 25 |
+| Kleine Straße | Vier aufeinanderfolgende Augenzahlen | 30 |
+| Große Straße | Fünf aufeinanderfolgende Augenzahlen | 40 |
+| Kniffel | Fünf gleiche Augenzahlen | 50 |
+| Chance | Beliebige Kombination | Summe aller fünf Würfel |
 
-## Wertungen
+Der Block verwendet diese Wertung und den 35-Punkte-Bonus. Zusätzliche Hausregeln wie Sonderboni für weitere Kniffel werden nicht automatisch berechnet.
 
-Der Spielzettel ist in zwei Abschnitte unterteilt:
+## Häufige Fragen zum Online-Kniffelblock
 
-### Oberer Abschnitt
+### Ist der Kniffelblock kostenlos und ohne Anmeldung nutzbar?
 
-- **Einser bis Sechser**: Summe aller Würfel mit der entsprechenden Augenzahl
-- Bonus von 35 Punkten, wenn die Summe 63 oder mehr beträgt
+Ja. Du kannst sofort Spieler hinzufügen und Punkte eintragen. Ein Benutzerkonto oder eine App-Installation ist nicht erforderlich.
 
-### Unterer Abschnitt
+### Kann ich den Block mit mehreren Spielern benutzen?
 
-- **Dreierpasch**: Summe aller Würfel, wenn mindestens drei gleiche Augenzahlen vorhanden sind
-- **Viererpasch**: Summe aller Würfel, wenn mindestens vier gleiche Augenzahlen vorhanden sind
-- **Full House**: 25 Punkte für drei gleiche und zwei andere gleiche Augenzahlen
-- **Kleine Straße**: 30 Punkte für vier aufeinanderfolgende Augenzahlen
-- **Große Straße**: 40 Punkte für fünf aufeinanderfolgende Augenzahlen
-- **Kniffel**: 50 Punkte für fünf gleiche Augenzahlen
-- **Chance**: Summe aller Würfel
+Ja. Füge für jeden Mitspieler einen Namen hinzu. Jede Person bekommt eine eigene Punktespalte; bei vielen Spielern lässt sich die Tabelle seitlich scrollen. Ihr verwendet dabei denselben Browser auf einem gemeinsamen Gerät. Eine synchronisierte Partie auf mehreren Geräten gibt es nicht.
 
-## Spielende und Wertung
+### Bleibt mein Punktestand nach dem Neuladen erhalten?
 
-Das Spiel endet, wenn alle Kategorien gefüllt sind. Der Spieler mit der höchsten Gesamtpunktzahl gewinnt.
+Der Block speichert eure Namen und Punkte in einem Browser-Cookie. Im selben Browser könnt ihr weiterspielen, solange dieses Cookie vorhanden und gültig ist. Wenn ihr Website-Daten löscht, Cookies blockiert oder eine private Browsersitzung beendet, kann der Spielstand verloren gehen. Auf einem anderen Gerät oder in einem anderen Browser ist er nicht verfügbar.
 
-## Strategie-Tipps
+### Wie streiche ich eine Kategorie oder korrigiere Punkte?
 
-- Versuche früh einen Bonus im oberen Abschnitt zu sichern.
-- Behalte die Wahrscheinlichkeiten im Auge: Ein Kniffel ist selten, eine Chance immer möglich.
-- Manchmal ist es klüger, eine niedrige Punktzahl in einer weniger wichtigen Kategorie einzutragen, um auf bessere Würfe in wichtigeren Kategorien zu warten.
+Bei Full House, kleiner Straße, großer Straße und Kniffel wählst du „Gestrichen“. In den Zahlenfeldern trägst du zum Streichen **0** ein. Falsche Einträge kannst du ändern; ein leeres Feld gibt die Kategorie wieder frei. Summen und Bonus werden neu berechnet, sobald die Änderung übernommen wurde.
 
-Kniffel ist ein unterhaltsames Spiel, das sowohl Glück als auch taktisches Denken erfordert. Mit etwas Übung und den richtigen Strategien kann jeder zum Kniffel-Meister werden!
+### Wie beginne ich eine neue Runde?
+
+Mit „Punktestand zurücksetzen“ leerst du nach einer Bestätigung die Punkte aller Spieler. Die Namen bleiben für die nächste Runde erhalten. Einzelne Spieler kannst du über das × neben ihrem Namen entfernen.

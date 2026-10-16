@@ -19,14 +19,19 @@ def get(session):
     content_html = mistletoe.markdown(md_content)
 
     return (
-        Title("online-kniffel.de - Kniffelblock online"),
+        Title("Kniffelblock online – kostenlos Punkte eintragen | online-kniffel.de"),
         Header(),
         Div(
             Div(
                 MyCard(
                     H2(
-                        "Spieler hinzufügen",
+                        "Spieler hinzufügen und loslegen",
                         cls="text-xl font-semibold mb-4 text-center",
+                    ),
+                    P(
+                        "Ihr braucht nur fünf Würfel. Tragt hier eure Namen ein "
+                        "und führt euren gemeinsamen Kniffelblock auf einem Gerät.",
+                        cls="text-center text-gray-600 max-w-2xl mx-auto mb-4",
                     ),
                     AddPlayerForm(),
                     Div(
@@ -66,7 +71,7 @@ def get(session):
                     ),
                     cls="py-12",
                 ),
-                cls="container mx-auto -mt-32",
+                cls="container mx-auto -mt-32 px-4",
             )
         ),
     )

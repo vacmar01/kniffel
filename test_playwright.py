@@ -72,7 +72,9 @@ class TestKniffelBrowser:
         page.goto(base_url)
         
         # Check title
-        expect(page).to_have_title("online-kniffel.de - Kniffelblock online")
+        expect(page).to_have_title(
+            "Kniffelblock online – kostenlos Punkte eintragen | online-kniffel.de"
+        )
         
         # Check for add player form
         expect(page.locator("input[placeholder='Spielername']")).to_be_visible()

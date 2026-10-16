@@ -31,11 +31,18 @@ def Navbar():
 def Hero():
     return Div(
         Span("🎲", cls="text-6xl mb-2"),
-        H1("online-kniffel.de", cls="text-4xl font-bold text-gray-100 mb-2"),
-        cls="flex flex-col items-center mt-10",
+        H1(
+            "Kniffelblock online – Punkte einfach eintragen",
+            cls="text-3xl sm:text-4xl font-bold text-gray-100 mb-4 max-w-3xl",
+        ),
+        cls="flex flex-col items-center mt-10 px-4",
     ), P(
-        "Kniffelblock online - kostenlos, ohne Registrierung",
-        cls="text-xl text-gray-300 mb-6",
+        "Mit echten Würfeln spielen, Punkte digital notieren. "
+        "Für mehrere Spieler, mit automatischer Punkte- und Bonusberechnung.",
+        cls="text-lg sm:text-xl text-gray-100 max-w-2xl mx-auto px-4 mb-4",
+    ), P(
+        "Kostenlos · Ohne Anmeldung · Direkt im Browser",
+        cls="text-base text-gray-100 mb-6 px-4",
     )
 
 

@@ -10,7 +10,11 @@ app, rt = fast_app(
         Script(src="/static/bundle.js", defer=""),
         Meta(
             name="description",
-            content="Kniffelblock online - kostenlos, ohne Registrierung",
+            content=(
+                "Kostenloser Kniffelblock online: Punkte für mehrere Spieler "
+                "eintragen, Summen und Bonus automatisch berechnen. "
+                "Mit echten Würfeln spielen, ohne Anmeldung."
+            ),
         ),
         Script(
             **{
