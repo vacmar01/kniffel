@@ -6,6 +6,9 @@ These test the actual user interactions that HTMX route tests can't verify.
 import subprocess
 import time
 import socket
+import sys
+from pathlib import Path
+
 import pytest
 from playwright.sync_api import Page, expect
 
@@ -26,38 +29,39 @@ TEST_PORT = 5002
 
 
 @pytest.fixture(scope="session")
-def base_url():
-    """Base URL for the app - always starts fresh server on port 5002 for test isolation"""
-    url = f"http://localhost:{TEST_PORT}"
-    
-    # Check if test port is already in use (another test run or leftover process)
-    if wait_for_server("localhost", TEST_PORT, timeout=1):
-        print(f"\nWarning: Port {TEST_PORT} already in use, attempting to use it...")
-        yield url
-        return
-    
-    # Start fresh server with uv on isolated port
-    print(f"\nStarting test server on port {TEST_PORT}...")
-    proc = subprocess.Popen(
-        ["uv", "run", "main.py", str(TEST_PORT)],
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-    )
-    
-    # Wait for server to be ready
-    if not wait_for_server("localhost", TEST_PORT, timeout=30):
-        proc.terminate()
-        proc.wait()
-        raise RuntimeError(f"Server failed to start on port {TEST_PORT} within 30 seconds")
-    
-    print(f"Test server ready on port {TEST_PORT}!")
-    
-    yield url
-    
-    # Cleanup
-    print("\nShutting down test server...")
-    proc.terminate()
-    proc.wait()
+def base_url(tmp_path_factory):
+    """Start an isolated server and database, without touching the dev server."""
+    url = f"http://127.0.0.1:{TEST_PORT}"
+    if wait_for_server("127.0.0.1", TEST_PORT, timeout=1):
+        pytest.fail(f"Port {TEST_PORT} is already in use; refusing to reuse its data")
+
+    repo = Path(__file__).resolve().parent
+    work = tmp_path_factory.mktemp("browser-server")
+    (work / "static").symlink_to(repo / "static", target_is_directory=True)
+    (work / "content.md").symlink_to(repo / "content.md")
+    with (work / "server.log").open("w+") as log:
+        proc = subprocess.Popen(
+            [
+                "uv", "run", "--no-project", "--python", sys.executable,
+                "python", "-m", "uvicorn", "main:app", "--app-dir", str(repo),
+                "--host", "127.0.0.1", "--port", str(TEST_PORT),
+            ],
+            cwd=work,
+            stdout=log,
+            stderr=subprocess.STDOUT,
+        )
+        try:
+            if not wait_for_server("127.0.0.1", TEST_PORT, timeout=30):
+                log.seek(0)
+                pytest.fail(f"Test server failed to start:\n{log.read()}")
+            yield url
+        finally:
+            proc.terminate()
+            try:
+                proc.wait(timeout=10)
+            except subprocess.TimeoutExpired:
+                proc.kill()
+                proc.wait()
 
 
 class TestKniffelBrowser:

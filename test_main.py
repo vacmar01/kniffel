@@ -1,11 +1,5 @@
-import pytest
-import uuid
-from starlette.testclient import TestClient
-from app import app
 from services.game import calculate_scores
 from models import categories, fixed_scores, upper_section
-
-client = TestClient(app)
 
 
 def test_calculate_scores_empty():
@@ -81,21 +75,21 @@ def test_upper_section_categories():
     assert upper_section == expected_upper
 
 
-def test_get_homepage():
+def test_get_homepage(client):
     """Test that the main page loads"""
     response = client.get("/")
     assert response.status_code == 200
     assert b"online-kniffel.de" in response.content
 
 
-def test_add_user():
+def test_add_user(client):
     """Test adding a user"""
     response = client.post("/add-user", data={"username": "Alice"})
     assert response.status_code == 200
     assert b"Alice" in response.content
 
 
-def test_add_duplicate_user():
+def test_add_duplicate_user(client):
     """Test that duplicate users are not added"""
     # Use a unique name to avoid interference from other tests
     import uuid
@@ -111,7 +105,7 @@ def test_add_duplicate_user():
     assert content.count(delete_pattern) == 1
 
 
-def test_update_score():
+def test_update_score(client):
     """Test updating a score"""
     client.post("/add-user", data={"username": "Charlie"})
     response = client.post("/update-score/Charlie/Einser", data={"value": "15"})
@@ -120,7 +114,7 @@ def test_update_score():
     assert b"107" in response.content or b"15" in response.content
 
 
-def test_delete_user():
+def test_delete_user(client):
     """Test deleting a user removes them from the game"""
     client.post("/add-user", data={"username": "David"})
     response = client.post("/delete-user/David")
@@ -129,7 +123,7 @@ def test_delete_user():
     assert b"David</th>" not in response.content
 
 
-def test_reset_scores():
+def test_reset_scores(client):
     """Test resetting all scores"""
     client.post("/add-user", data={"username": "Eve"})
     client.post("/update-score/Eve/Einser", data={"value": "5"})
@@ -139,7 +133,7 @@ def test_reset_scores():
     assert b"0" in response.content
 
 
-def test_full_game_flow():
+def test_full_game_flow(client):
     """Integration test: full game workflow across multiple requests"""
     import uuid
 
