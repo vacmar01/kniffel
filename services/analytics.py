@@ -2,15 +2,14 @@
 import sqlite3
 import json
 import hashlib
-import random
 import uuid
 from datetime import datetime, timedelta
 from config import ANALYTICS_DB
 
 
-def init_analytics_db():
+def init_analytics_db(*, db_path=ANALYTICS_DB):
     """Initialize the analytics database with events table."""
-    conn = sqlite3.connect(ANALYTICS_DB)
+    conn = sqlite3.connect(db_path)
     conn.execute("""
         CREATE TABLE IF NOT EXISTS events (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -37,15 +36,6 @@ def init_analytics_db():
     conn.close()
 
 
-def cleanup_old_events():
-    """Remove events older than 28 days."""
-    conn = sqlite3.connect(ANALYTICS_DB)
-    cutoff = (datetime.now() - timedelta(days=28)).isoformat()
-    conn.execute("DELETE FROM events WHERE timestamp < ?", (cutoff,))
-    conn.commit()
-    conn.close()
-
-
 def get_session_hash(session):
     """Generate an anonymized hash for the session."""
     if "session_id" not in session:
@@ -61,14 +51,13 @@ def count_filled_categories(scores):
     return total
 
 
-def log_event(session, event_type, category=None, value=None, extra_metadata=None):
-    """Log an analytics event to the database."""
+def log_event(
+    session, event_type, category=None, value=None, extra_metadata=None,
+    *, db_path=ANALYTICS_DB,
+):
+    """Log an analytics event, retaining history until explicitly reset."""
     try:
-        # Cleanup old events periodically (1% chance)
-        if random.random() < 0.01:
-            cleanup_old_events()
-
-        conn = sqlite3.connect(ANALYTICS_DB)
+        conn = sqlite3.connect(db_path)
         users = session.get("users", [])
         scores = session.get("scores", {})
 
