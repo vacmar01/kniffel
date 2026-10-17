@@ -47,3 +47,4 @@ from routes import main as main_routes
 from routes import game as game_routes
 from routes import admin as admin_routes
 from routes import seo as seo_routes
+from routes import statistics as statistics_routes

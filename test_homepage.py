@@ -133,14 +133,14 @@ def test_robots_advertises_production_sitemap(client):
     assert f"Sitemap: {SITE_URL}/sitemap.xml" in response.text
 
 
-def test_sitemap_lists_only_the_canonical_homepage(client):
+def test_sitemap_lists_only_canonical_public_pages(client):
     response = client.get("/sitemap.xml", headers={"host": "alternate.example"})
     assert response.status_code == 200
     assert response.headers["content-type"].startswith("application/xml")
     root = ElementTree.fromstring(response.text)
     namespace = {"s": "http://www.sitemaps.org/schemas/sitemap/0.9"}
     assert [node.text for node in root.findall("s:url/s:loc", namespace)] == [
-        f"{SITE_URL}/"
+        f"{SITE_URL}/", f"{SITE_URL}/statistik/"
     ]
     assert not root.findall("s:url/s:lastmod", namespace)
 

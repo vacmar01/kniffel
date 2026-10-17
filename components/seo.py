@@ -1,4 +1,4 @@
-"""Public homepage metadata, independent of request host and session data."""
+"""Public page metadata, independent of request host and session data."""
 import json
 
 from fasthtml.common import Link, Meta, Script, Title
@@ -13,20 +13,26 @@ HOME_DESCRIPTION = (
 )
 
 
-def HomepageMetadata():
+def PageMetadata(title, description, path):
     return (
-        Title(HOME_TITLE),
-        Meta(name="description", content=HOME_DESCRIPTION),
-        Link(rel="canonical", href=f"{SITE_URL}/"),
+        Title(title),
+        Meta(name="description", content=description),
+        Link(rel="canonical", href=f"{SITE_URL}{path}"),
         Meta(property="og:type", content="website"),
         Meta(property="og:locale", content="de_DE"),
         Meta(property="og:site_name", content="online-kniffel.de"),
-        Meta(property="og:url", content=f"{SITE_URL}/"),
-        Meta(property="og:title", content=HOME_TITLE),
-        Meta(property="og:description", content=HOME_DESCRIPTION),
+        Meta(property="og:url", content=f"{SITE_URL}{path}"),
+        Meta(property="og:title", content=title),
+        Meta(property="og:description", content=description),
         Meta(name="twitter:card", content="summary"),
-        Meta(name="twitter:title", content=HOME_TITLE),
-        Meta(name="twitter:description", content=HOME_DESCRIPTION),
+        Meta(name="twitter:title", content=title),
+        Meta(name="twitter:description", content=description),
+    )
+
+
+def HomepageMetadata():
+    return (
+        *PageMetadata(HOME_TITLE, HOME_DESCRIPTION, "/"),
         Script(
             json.dumps({
                 "@context": "https://schema.org",

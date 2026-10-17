@@ -55,6 +55,12 @@ def get(session):
                         ),
                         " | ",
                         A(
+                            "Kniffel-Statistik",
+                            href="/statistik/",
+                            cls="text-blue-500 hover:text-blue-700",
+                        ),
+                        " | ",
+                        A(
                             "GitHub",
                             href="https://github.com/vacmar01/kniffel",
                             target="_blank",

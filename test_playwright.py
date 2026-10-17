@@ -237,6 +237,31 @@ class TestKniffelBrowser:
         einser_input_after = page.locator("tr:has-text('Einser') >> input[type='number']").first
         expect(einser_input_after).to_have_value("")
     
+    def test_statistics_link_and_mobile_layout(self, page: Page, browser, base_url: str):
+        page.goto(base_url)
+        page.get_by_label("Spielername", exact=True).fill("StatistikTest")
+        page.get_by_role("button", name="Hinzufügen", exact=True).click()
+        score = page.get_by_label("Punkte für StatistikTest: Einser", exact=True)
+        score.fill("3")
+        score.blur()
+        expect(page.locator("tr:has-text('Gesamtsumme') td").nth(1)).to_have_text("3")
+        page.get_by_role("link", name="Kniffel-Statistik", exact=True).click()
+        expect(page).to_have_url(base_url + "/statistik/")
+        expect(page.locator("#category-statistics")).to_be_visible()
+        expect(page.get_by_text("StatistikTest", exact=True)).to_have_count(0)
+        expect(page.locator("#methodik")).to_have_count(0)
+
+        context = browser.new_context(
+            java_script_enabled=False, viewport={"width": 390, "height": 844}
+        )
+        try:
+            mobile = context.new_page()
+            mobile.goto(base_url + "/statistik/")
+            expect(mobile.locator("#category-statistics")).to_be_visible()
+            assert mobile.evaluate("document.documentElement.scrollWidth <= window.innerWidth")
+        finally:
+            context.close()
+
     def test_delete_player(self, page: Page, base_url: str):
         """Test deleting a player"""
         page.goto(base_url)
