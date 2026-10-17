@@ -75,7 +75,7 @@ def get():
         *PageMetadata(STATISTICS_TITLE, STATISTICS_DESCRIPTION, "/statistik/"),
         Div(
             Div(
-                A("← Zum kostenlosen Kniffelblock", href="/", cls="underline text-blue-100"),
+                A("← Zum Kniffelblock", href="/", cls="underline text-blue-100"),
                 H1("Kniffel-Statistik aus unserem Online-Block", cls="text-3xl sm:text-4xl font-bold mt-6 mb-4"),
                 P(
                     "Welche Felder bekommen null Punkte? Wie hoch sind die eingetragenen "
@@ -89,8 +89,7 @@ def get():
         Main(
             StatisticsResults(stats),
             P(
-                "Selbst eine Runde spielen? ",
-                A("Kniffelblock kostenlos öffnen →", href="/", cls="text-blue-700 underline"),
+                A("Zum Kniffelblock →", href="/", cls="text-blue-700 underline"),
                 cls="text-center mt-8",
             ),
             cls="w-full min-w-0 max-w-5xl mx-auto px-4 py-8",
