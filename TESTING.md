@@ -5,7 +5,7 @@ Always use `uv` for Python commands.
 ## Unit and route tests
 
 ```bash
-uv run pytest test_main.py test_analytics.py test_homepage.py -v
+uv run pytest test_main.py test_analytics.py test_homepage.py test_statistics.py test_public_statistics.py -v
 ```
 
 Route tests use the shared `client` fixture in `conftest.py`. Each test gets a
@@ -17,6 +17,9 @@ Core coverage includes scoring, category definitions, player management, score
 entry, reset, and a complete multi-player workflow. Homepage tests check semantic
 headings, the empty-state placeholder and real scorecards, metadata, structured data,
 canonical URLs, crawler discovery files, and utility-page indexing directives.
+Statistics tests verify aggregation against the existing SQLite schema, invalid-score
+filtering, read-only access, live page updates, public metadata, and exclusion of
+session identifiers and event metadata from the rendered page.
 
 ## Browser integration tests
 
@@ -45,8 +48,8 @@ Browser tests cover the actual HTMX flow: adding and removing players, entering
 variable/fixed scores, calculating totals, and confirming resets. They also check
 the placeholder without JavaScript, its replacement when adding the first player,
 its return after removing the last player, and mobile entry/reload with several
-players. Build frontend assets
-before testing changes that introduce Tailwind classes.
+players. The statistics page is also checked on mobile with JavaScript disabled.
+Build frontend assets before testing changes that introduce Tailwind classes.
 
 ## All tests
 

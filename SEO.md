@@ -19,7 +19,8 @@ pages for every wording.
 - Check that `/` returns 200, uses German HTML language metadata, and contains
   exactly one canonical URL: `https://online-kniffel.de/`.
 - Check that `/robots.txt` and `/sitemap.xml` return 200 with the correct content
-  types and production URLs. Only the public homepage belongs in the sitemap.
+  types and production URLs. The homepage and `/statistik/` belong in the sitemap;
+  admin routes and HTMX fragments do not.
 - Confirm HTTP redirects to HTTPS in hosting configuration. If you configure a
   `www` hostname, give it a valid certificate and permanently redirect it to the
   canonical hostname. Don't advertise hostnames that aren't configured.
@@ -57,7 +58,13 @@ Review over several weeks, not daily fluctuations. Neither metadata changes,
 structured data, nor a sitemap guarantee ranking recovery or rich results.
 Keep private Search Console exports out of commits.
 
-## Original-data content: next phase
+## Public statistics and future score benchmarks
+
+`/statistik/` reads the deployment's existing analytics database and publishes
+aggregate category entry counts, zero-point shares, and mean points per entry.
+It uses the same schema locally and in production; no production export or
+manual data import is needed. It excludes invalid scores, never changes the
+database, and does not publish session identifiers or event metadata.
 
 Automatic 28-day analytics deletion has been removed. Existing event logs still
 lack the player/game identifiers and final scorecards needed for trustworthy
@@ -73,5 +80,5 @@ Before building a score-benchmark page:
    statistics need not mean indefinite retention of session-linked raw events.
 4. Publish sample sizes, periods, exclusions, and the fact that observations
    describe this site's users, not all Kniffel players or theoretical dice odds.
-5. Start with one substantial score-comparison page. Expand only where the data
-   supports genuinely different questions; don't fabricate historical findings.
+5. Add a score-comparison page only when completed-scorecard data supports it.
+   Expand where the data answers genuinely different questions.
