@@ -36,60 +36,27 @@ def ScoreInput(user, category, value):
     )
 
 
-def ScorecardPreview():
-    """A read-only example, never added to the session or analytics."""
-    example_scores = {
-        "Einser": 3, "Zweier": 6, "Dreier": 9, "Vierer": 12,
-        "Fünfer": 15, "Sechser": 18, "Dreierpasch": 22,
-        "Viererpasch": 24, "Full House": 25, "Kleine Straße": 30,
-        "Große Straße": 40, "Kniffel": 0, "Chance": 23,
-    }
-    upper_total, bonus, total = calculate_scores(example_scores)
-    cell_cls = "border border-gray-200 px-3 py-1 text-sm"
+def ScorecardPlaceholder():
+    """Show where the real scorecard will appear, without fake game data."""
     return Div(
-        H3("So sieht dein Kniffelblock aus", cls="text-lg font-semibold mb-2"),
-        P(
-            "Dies ist nur ein Beispiel. Füge oben den ersten Spieler hinzu, "
-            "um einen leeren Block zu starten.",
-            cls="text-gray-600 mb-4",
+        Div(
+            Div("🎲", aria_hidden="true", cls="text-4xl mb-3"),
+            H3(
+                "Hier erscheint euer Kniffelblock",
+                cls="text-lg font-semibold text-gray-700 mb-2",
+            ),
+            P(
+                "Füge oben den ersten Spieler hinzu, um loszulegen.",
+                cls="text-gray-600",
+            ),
+            P(
+                "Punkte, Summen und Bonus seht ihr dann direkt hier.",
+                cls="text-sm text-gray-500 mt-2",
+            ),
+            cls="rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 px-4 py-10 text-center",
+            id="scorecard-placeholder",
+            role="status",
         ),
-        Table(
-            Caption(
-                "Beispielrunde mit erfundenen Punkten – kein echter Spielstand",
-                cls="text-sm text-gray-600 mb-2 text-left",
-            ),
-            Thead(
-                Tr(
-                    Th("Kategorie", scope="col", cls=cell_cls + " text-left"),
-                    Th("Beispielpunkte", scope="col", cls=cell_cls + " text-right"),
-                )
-            ),
-            Tbody(
-                *[
-                    Tr(
-                        Th(category, scope="row", cls=cell_cls + " text-left font-normal"),
-                        Td(str(example_scores[category]), cls=cell_cls + " text-right"),
-                    )
-                    for category in categories
-                ],
-            ),
-            Tfoot(
-                *[
-                    Tr(
-                        Th(label, scope="row", cls=cell_cls + " text-left"),
-                        Td(str(value), cls=cell_cls + " text-right font-bold"),
-                    )
-                    for label, value in [
-                        ("Oberer Teil Summe", upper_total),
-                        ("Bonus (bei 63 oder mehr)", bonus),
-                        ("Gesamtsumme", total),
-                    ]
-                ]
-            ),
-            cls="w-full border-collapse bg-white",
-            id="scorecard-preview",
-        ),
-        cls="max-w-xl mx-auto",
         id="score-table",
     )
 
@@ -100,7 +67,7 @@ def ScoreTable(session):
     """
     users, scores = session.get("users", []), session.get("scores", {})
     if not users:
-        return ScorecardPreview()
+        return ScorecardPlaceholder()
 
     def get_missing_categories(user_scores):
         """

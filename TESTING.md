@@ -15,7 +15,7 @@ inject a temporary database path directly, without mocking SQLite.
 
 Core coverage includes scoring, category definitions, player management, score
 entry, reset, and a complete multi-player workflow. Homepage tests check semantic
-headings, server-rendered example/real scorecards, metadata, structured data,
+headings, the empty-state placeholder and real scorecards, metadata, structured data,
 canonical URLs, crawler discovery files, and utility-page indexing directives.
 
 ## Browser integration tests
@@ -42,8 +42,10 @@ The development server on **port 5001** is left untouched. The test server's log
 is in its pytest temporary directory (`browser-server*/server.log`).
 
 Browser tests cover the actual HTMX flow: adding and removing players, entering
-variable/fixed scores, calculating totals, and confirming resets. They also check the example without
-JavaScript and mobile entry/reload with several players. Build frontend assets
+variable/fixed scores, calculating totals, and confirming resets. They also check
+the placeholder without JavaScript, its replacement when adding the first player,
+its return after removing the last player, and mobile entry/reload with several
+players. Build frontend assets
 before testing changes that introduce Tailwind classes.
 
 ## All tests
